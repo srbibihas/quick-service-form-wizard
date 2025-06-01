@@ -27,10 +27,6 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
     message += `👤 CLIENT: ${formData.contactInfo.name}\n`;
     message += `📱 PHONE: ${formData.contactInfo.phone}\n`;
     message += `📧 EMAIL: ${formData.contactInfo.email}\n\n`;
-    
-    message += `📝 PROJECT DETAILS:\n${formData.projectDetails.description}\n\n`;
-    message += `⏰ TIMELINE: ${formData.projectDetails.timeline}\n`;
-    message += `💰 BUDGET: ${formData.projectDetails.budget}\n\n`;
 
     if (formData.files.length > 0) {
       message += `📎 FILES (${formData.files.length}):\n`;
@@ -51,10 +47,6 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
         message += `• ${formattedKey}: ${value}\n`;
       }
     });
-
-    if (formData.projectDetails.instructions) {
-      message += `\n📝 SPECIAL INSTRUCTIONS:\n${formData.projectDetails.instructions}\n`;
-    }
 
     message += `\n⚡ SUBMIT DATE: ${new Date().toLocaleString()}\n`;
     message += `\n💼 Contact preference: ${formData.contactInfo.preferredContact}`;
@@ -135,43 +127,11 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
           </CardContent>
         </Card>
 
-        {/* Project Details */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg">Project Information</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => onEdit(3)}>
-              <Edit className="w-4 h-4" />
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <h4 className="font-medium text-gray-900">Description</h4>
-              <p className="text-gray-600 text-sm">{formData.projectDetails.description}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="text-gray-600">Timeline:</span>
-                <span className="font-medium ml-2">{formData.projectDetails.timeline}</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Budget:</span>
-                <span className="font-medium ml-2">{formData.projectDetails.budget}</span>
-              </div>
-            </div>
-            {formData.projectDetails.instructions && (
-              <div>
-                <h4 className="font-medium text-gray-900">Special Instructions</h4>
-                <p className="text-gray-600 text-sm">{formData.projectDetails.instructions}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Files */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-lg">Uploaded Files ({formData.files.length})</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => onEdit(4)}>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(3)}>
               <Edit className="w-4 h-4" />
             </Button>
           </CardHeader>
@@ -205,7 +165,7 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-lg">Contact Information</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => onEdit(5)}>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(4)}>
               <Edit className="w-4 h-4" />
             </Button>
           </CardHeader>

@@ -7,7 +7,6 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import StepHeader from './wizard/StepHeader';
 import ServiceSelection from './wizard/ServiceSelection';
 import ServiceDetails from './wizard/ServiceDetails';
-import ProjectDetails from './wizard/ProjectDetails';
 import FileUpload from './wizard/FileUpload';
 import ContactInfo from './wizard/ContactInfo';
 import ReviewSubmit from './wizard/ReviewSubmit';
@@ -16,10 +15,9 @@ import { FormData, FormErrors } from '@/types/booking';
 const STEPS = [
   { id: 1, title: 'Service Selection', description: 'Choose your service' },
   { id: 2, title: 'Service Details', description: 'Specific requirements' },
-  { id: 3, title: 'Project Information', description: 'Tell us about your project' },
-  { id: 4, title: 'File Upload', description: 'Upload your files' },
-  { id: 5, title: 'Contact Information', description: 'How to reach you' },
-  { id: 6, title: 'Review & Submit', description: 'Confirm your order' }
+  { id: 3, title: 'File Upload', description: 'Upload your files' },
+  { id: 4, title: 'Contact Information', description: 'How to reach you' },
+  { id: 5, title: 'Review & Submit', description: 'Confirm your order' }
 ];
 
 const BookingWizard = () => {
@@ -83,18 +81,7 @@ const BookingWizard = () => {
       case 2:
         // Service-specific validation will be handled in ServiceDetails component
         break;
-      case 3:
-        if (!formData.projectDetails.description) {
-          newErrors.projectDetails = { description: 'Project description is required' };
-        }
-        if (!formData.projectDetails.timeline) {
-          newErrors.projectDetails = { ...newErrors.projectDetails, timeline: 'Timeline is required' };
-        }
-        if (!formData.projectDetails.budget) {
-          newErrors.projectDetails = { ...newErrors.projectDetails, budget: 'Budget range is required' };
-        }
-        break;
-      case 5:
+      case 4:
         if (!formData.contactInfo.name) {
           newErrors.contactInfo = { name: 'Name is required' };
         }
@@ -122,8 +109,29 @@ const BookingWizard = () => {
   };
 
   const goToStep = (step: number) => {
-    if (step <= currentStep || validateStep(currentStep)) {
+    // Only allow going to a step if all previous steps are valid
+    let canGoToStep = true;
+    for (let i = 1; i < step; i++) {
+      if (!validateStepSilently(i)) {
+        canGoToStep = false;
+        break;
+      }
+    }
+    if (canGoToStep) {
       setCurrentStep(step);
+    }
+  };
+
+  const validateStepSilently = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        return !!formData.service;
+      case 2:
+        return true; // Service details validation will be handled in component
+      case 4:
+        return !!(formData.contactInfo.name && formData.contactInfo.phone && formData.contactInfo.email);
+      default:
+        return true;
     }
   };
 
@@ -148,21 +156,13 @@ const BookingWizard = () => {
         );
       case 3:
         return (
-          <ProjectDetails
-            projectDetails={formData.projectDetails}
-            onUpdate={(details) => updateFormData('projectDetails', details)}
-            errors={errors.projectDetails || {}}
-          />
-        );
-      case 4:
-        return (
           <FileUpload
             service={formData.service}
             files={formData.files}
             onUpdate={(files) => updateFormData('files', files)}
           />
         );
-      case 5:
+      case 4:
         return (
           <ContactInfo
             contactInfo={formData.contactInfo}
@@ -170,7 +170,7 @@ const BookingWizard = () => {
             errors={errors.contactInfo || {}}
           />
         );
-      case 6:
+      case 5:
         return (
           <ReviewSubmit
             formData={formData}
