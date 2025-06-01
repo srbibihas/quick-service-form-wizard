@@ -51,7 +51,7 @@ export interface UploadedFile {
 export interface FormData {
   service: string;
   serviceDetails: ServiceDetails;
-  projectDetails: ProjectDetails;
+  projectDetails?: ProjectDetails; // Made optional since we removed this step
   files: UploadedFile[];
   contactInfo: ContactInfo;
 }
