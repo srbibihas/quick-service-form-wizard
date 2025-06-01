@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,10 @@ const BookingWizard = () => {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
+        // Ensure files is always an array
+        if (parsed.files && !Array.isArray(parsed.files)) {
+          parsed.files = Object.values(parsed.files);
+        }
         setFormData(parsed);
         console.log('Loaded form data:', parsed);
       } catch (e) {
@@ -60,6 +65,12 @@ const BookingWizard = () => {
       setFormData(prev => ({
         ...prev,
         service: data
+      }));
+    } else if (section === 'files') {
+      // Handle files array directly without spreading
+      setFormData(prev => ({
+        ...prev,
+        files: data
       }));
     } else {
       setFormData(prev => ({
