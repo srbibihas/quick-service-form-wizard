@@ -51,6 +51,13 @@ const ServiceSelection: React.FC<ServiceSelectionProps> = ({
   onServiceSelect,
   error
 }) => {
+  console.log('ServiceSelection render - selectedService:', selectedService);
+
+  const handleServiceChange = (value: string) => {
+    console.log('Service selected:', value);
+    onServiceSelect(value);
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -60,7 +67,7 @@ const ServiceSelection: React.FC<ServiceSelectionProps> = ({
 
       <RadioGroup
         value={selectedService}
-        onValueChange={onServiceSelect}
+        onValueChange={handleServiceChange}
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
         {services.map((service) => (
@@ -74,8 +81,10 @@ const ServiceSelection: React.FC<ServiceSelectionProps> = ({
               htmlFor={service.id}
               className="cursor-pointer block"
             >
-              <Card className={`h-full transition-all duration-200 hover:shadow-lg hover:scale-105 peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:border-blue-500 ${
-                selectedService === service.id ? 'shadow-lg scale-105' : ''
+              <Card className={`h-full transition-all duration-200 hover:shadow-lg hover:scale-105 ${
+                selectedService === service.id 
+                  ? 'ring-2 ring-blue-500 border-blue-500 shadow-lg scale-105' 
+                  : 'hover:border-gray-300'
               }`}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -108,8 +117,14 @@ const ServiceSelection: React.FC<ServiceSelectionProps> = ({
       </RadioGroup>
 
       {error && (
-        <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
+        <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg border border-red-200">
           {error}
+        </div>
+      )}
+
+      {selectedService && (
+        <div className="text-center text-green-600 text-sm bg-green-50 p-3 rounded-lg border border-green-200">
+          ✓ {services.find(s => s.id === selectedService)?.title} selected
         </div>
       )}
     </div>

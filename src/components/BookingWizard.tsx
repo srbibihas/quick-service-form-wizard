@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,12 +24,6 @@ const BookingWizard = () => {
   const [formData, setFormData] = useState<FormData>({
     service: '',
     serviceDetails: {},
-    projectDetails: {
-      description: '',
-      timeline: '',
-      budget: '',
-      instructions: ''
-    },
     files: [],
     contactInfo: {
       name: '',
@@ -46,7 +39,9 @@ const BookingWizard = () => {
     const savedData = localStorage.getItem('bookingFormData');
     if (savedData) {
       try {
-        setFormData(JSON.parse(savedData));
+        const parsed = JSON.parse(savedData);
+        setFormData(parsed);
+        console.log('Loaded form data:', parsed);
       } catch (e) {
         console.error('Error loading saved form data:', e);
       }
@@ -56,13 +51,23 @@ const BookingWizard = () => {
   // Save data to localStorage whenever formData changes
   useEffect(() => {
     localStorage.setItem('bookingFormData', JSON.stringify(formData));
+    console.log('Saved form data:', formData);
   }, [formData]);
 
   const updateFormData = (section: string, data: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: { ...prev[section], ...data }
-    }));
+    console.log('Updating form data:', section, data);
+    if (section === 'service') {
+      setFormData(prev => ({
+        ...prev,
+        service: data
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [section]: { ...prev[section], ...data }
+      }));
+    }
+    
     // Clear errors for updated fields
     if (errors[section]) {
       setErrors(prev => ({ ...prev, [section]: {} }));
@@ -75,7 +80,7 @@ const BookingWizard = () => {
     switch (step) {
       case 1:
         if (!formData.service) {
-          newErrors.service = 'Please select a service';
+          newErrors.service = 'Please select a service to continue';
         }
         break;
       case 2:
@@ -99,6 +104,7 @@ const BookingWizard = () => {
   };
 
   const nextStep = () => {
+    console.log('Next step clicked, current step:', currentStep, 'formData:', formData);
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
     }
