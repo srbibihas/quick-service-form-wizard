@@ -56,7 +56,7 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
 
   const handleWhatsAppSubmit = () => {
     const message = generateWhatsAppMessage();
-    const phoneNumber = formData.contactInfo.phone.replace(/[^\d+]/g, '');
+    const phoneNumber = "+1234567890"; // Replace with your business WhatsApp number
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     
     // Clear form data from localStorage after successful submission
