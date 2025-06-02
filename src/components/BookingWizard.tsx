@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -121,6 +120,15 @@ const BookingWizard = () => {
     }
   };
 
+  const handleChangeService = () => {
+    setCurrentStep(1);
+    setFormData(prev => ({
+      ...prev,
+      service: '',
+      serviceDetails: {}
+    }));
+  };
+
   const validateStep = (step: number): boolean => {
     const newErrors: FormErrors = {};
 
@@ -235,6 +243,7 @@ const BookingWizard = () => {
           service={formData.service}
           serviceDetails={formData.serviceDetails}
           onUpdate={(details) => updateFormData('serviceDetails', details)}
+          onChangeService={handleChangeService}
           errors={errors.serviceDetails || {}}
         />
       );

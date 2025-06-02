@@ -4,12 +4,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { ServiceDetails as ServiceDetailsType } from '@/types/booking';
 
 interface ServiceDetailsProps {
   service: string;
   serviceDetails: ServiceDetailsType;
   onUpdate: (details: ServiceDetailsType) => void;
+  onChangeService: () => void;
   errors: Record<string, string>;
 }
 
@@ -17,15 +20,38 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
   service,
   serviceDetails,
   onUpdate,
+  onChangeService,
   errors
 }) => {
   const updateField = (field: string, value: string) => {
     onUpdate({ ...serviceDetails, [field]: value });
   };
 
+  const serviceNames = {
+    'wordpress': 'WordPress Development',
+    'graphic-design': 'Graphic Design',
+    'video-editing': 'Video Editing',
+    'tshirt-printing': 'T-shirt Printing'
+  };
+
+  const renderServiceHeader = (serviceName: string) => (
+    <div className="flex items-center justify-between mb-6">
+      <h2 className="text-2xl font-bold text-gray-900">{serviceName} Details</h2>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onChangeService}
+        className="flex items-center gap-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Change Service
+      </Button>
+    </div>
+  );
+
   const renderWordPressFields = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">WordPress Details</h2>
+      {renderServiceHeader('WordPress')}
       
       <div className="space-y-4">
         <div>
@@ -118,7 +144,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
 
   const renderGraphicDesignFields = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Graphic Design Details</h2>
+      {renderServiceHeader('Graphic Design')}
       
       <div className="space-y-4">
         <div>
@@ -188,7 +214,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
 
   const renderVideoEditingFields = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Video Editing Details</h2>
+      {renderServiceHeader('Video Editing')}
       
       <div className="space-y-4">
         <div>
@@ -304,7 +330,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
 
   const renderTshirtFields = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">T-shirt Printing Details</h2>
+      {renderServiceHeader('T-shirt Printing')}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
         <p className="text-yellow-800 text-sm">
           <strong>Important:</strong> For t-shirt designs, please upload PNG files with transparent backgrounds only.
