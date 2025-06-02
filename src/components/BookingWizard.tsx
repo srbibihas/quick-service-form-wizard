@@ -12,13 +12,14 @@ import ContactInfo from './wizard/ContactInfo';
 import ReviewSubmit from './wizard/ReviewSubmit';
 import { FormData, FormErrors } from '@/types/booking';
 
-const STEPS = [
+const BASE_STEPS = [
   { id: 1, title: 'Service Selection', description: 'Choose your service' },
   { id: 2, title: 'Service Details', description: 'Specific requirements' },
-  { id: 3, title: 'File Upload', description: 'Upload your files' },
-  { id: 4, title: 'Contact Information', description: 'How to reach you' },
-  { id: 5, title: 'Review & Submit', description: 'Confirm your order' }
+  { id: 3, title: 'Contact Information', description: 'How to reach you' },
+  { id: 4, title: 'Review & Submit', description: 'Confirm your order' }
 ];
+
+const FILE_UPLOAD_STEP = { id: 3, title: 'File Upload', description: 'Upload your files' };
 
 const BookingWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -34,6 +35,27 @@ const BookingWizard = () => {
     }
   });
   const [errors, setErrors] = useState<FormErrors>({});
+
+  // Determine if file upload is needed for the selected service
+  const needsFileUpload = formData.service === 'tshirt-printing' || formData.service === 'graphic-design';
+
+  // Generate steps based on service selection
+  const getSteps = () => {
+    if (!needsFileUpload) {
+      return BASE_STEPS;
+    }
+    
+    // Insert file upload step before contact info
+    return [
+      BASE_STEPS[0], // Service Selection
+      BASE_STEPS[1], // Service Details
+      FILE_UPLOAD_STEP, // File Upload
+      { ...BASE_STEPS[2], id: 4 }, // Contact Information (renumbered)
+      { ...BASE_STEPS[3], id: 5 } // Review & Submit (renumbered)
+    ];
+  };
+
+  const steps = getSteps();
 
   // Load saved data from localStorage
   useEffect(() => {
@@ -59,6 +81,19 @@ const BookingWizard = () => {
     console.log('Saved form data:', formData);
   }, [formData]);
 
+  // Reset to step 1 when service changes and file upload availability changes
+  useEffect(() => {
+    if (formData.service) {
+      const wasFileUploadNeeded = currentStep === 3 && steps.find(s => s.id === 3)?.title === 'File Upload';
+      const isFileUploadNeeded = needsFileUpload;
+      
+      // If we're on a step that no longer exists due to service change, go back to step 2
+      if (wasFileUploadNeeded !== isFileUploadNeeded && currentStep > 2) {
+        setCurrentStep(2);
+      }
+    }
+  }, [formData.service, needsFileUpload]);
+
   const updateFormData = (section: string, data: any) => {
     console.log('Updating form data:', section, data);
     if (section === 'service') {
@@ -67,10 +102,11 @@ const BookingWizard = () => {
         service: data
       }));
     } else if (section === 'files') {
-      // Handle files array directly without spreading
+      // Ensure files is always an array
+      const filesArray = Array.isArray(data) ? data : [];
       setFormData(prev => ({
         ...prev,
-        files: data
+        files: filesArray
       }));
     } else {
       setFormData(prev => ({
@@ -97,15 +133,35 @@ const BookingWizard = () => {
       case 2:
         // Service-specific validation will be handled in ServiceDetails component
         break;
+      case 3:
+        if (needsFileUpload) {
+          // This is file upload step, no validation needed
+          break;
+        } else {
+          // This is contact info step for services without file upload
+          if (!formData.contactInfo.name) {
+            newErrors.contactInfo = { name: 'Name is required' };
+          }
+          if (!formData.contactInfo.phone) {
+            newErrors.contactInfo = { ...newErrors.contactInfo, phone: 'Phone number is required' };
+          }
+          if (!formData.contactInfo.email) {
+            newErrors.contactInfo = { ...newErrors.contactInfo, email: 'Email is required' };
+          }
+        }
+        break;
       case 4:
-        if (!formData.contactInfo.name) {
-          newErrors.contactInfo = { name: 'Name is required' };
-        }
-        if (!formData.contactInfo.phone) {
-          newErrors.contactInfo = { ...newErrors.contactInfo, phone: 'Phone number is required' };
-        }
-        if (!formData.contactInfo.email) {
-          newErrors.contactInfo = { ...newErrors.contactInfo, email: 'Email is required' };
+        if (needsFileUpload) {
+          // This is contact info step for services with file upload
+          if (!formData.contactInfo.name) {
+            newErrors.contactInfo = { name: 'Name is required' };
+          }
+          if (!formData.contactInfo.phone) {
+            newErrors.contactInfo = { ...newErrors.contactInfo, phone: 'Phone number is required' };
+          }
+          if (!formData.contactInfo.email) {
+            newErrors.contactInfo = { ...newErrors.contactInfo, email: 'Email is required' };
+          }
         }
         break;
     }
@@ -117,7 +173,7 @@ const BookingWizard = () => {
   const nextStep = () => {
     console.log('Next step clicked, current step:', currentStep, 'formData:', formData);
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
+      setCurrentStep(prev => Math.min(prev + 1, steps.length));
     }
   };
 
@@ -145,33 +201,45 @@ const BookingWizard = () => {
         return !!formData.service;
       case 2:
         return true; // Service details validation will be handled in component
+      case 3:
+        if (needsFileUpload) {
+          return true; // File upload step, no validation needed
+        } else {
+          // Contact info step for services without file upload
+          return !!(formData.contactInfo.name && formData.contactInfo.phone && formData.contactInfo.email);
+        }
       case 4:
-        return !!(formData.contactInfo.name && formData.contactInfo.phone && formData.contactInfo.email);
+        if (needsFileUpload) {
+          // Contact info step for services with file upload
+          return !!(formData.contactInfo.name && formData.contactInfo.phone && formData.contactInfo.email);
+        }
+        return true;
       default:
         return true;
     }
   };
 
   const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <ServiceSelection
-            selectedService={formData.service}
-            onServiceSelect={(service) => updateFormData('service', service)}
-            error={errors.service}
-          />
-        );
-      case 2:
-        return (
-          <ServiceDetails
-            service={formData.service}
-            serviceDetails={formData.serviceDetails}
-            onUpdate={(details) => updateFormData('serviceDetails', details)}
-            errors={errors.serviceDetails || {}}
-          />
-        );
-      case 3:
+    // Determine what content to show based on current step and service
+    if (currentStep === 1) {
+      return (
+        <ServiceSelection
+          selectedService={formData.service}
+          onServiceSelect={(service) => updateFormData('service', service)}
+          error={errors.service}
+        />
+      );
+    } else if (currentStep === 2) {
+      return (
+        <ServiceDetails
+          service={formData.service}
+          serviceDetails={formData.serviceDetails}
+          onUpdate={(details) => updateFormData('serviceDetails', details)}
+          errors={errors.serviceDetails || {}}
+        />
+      );
+    } else if (currentStep === 3) {
+      if (needsFileUpload) {
         return (
           <FileUpload
             service={formData.service}
@@ -179,7 +247,7 @@ const BookingWizard = () => {
             onUpdate={(files) => updateFormData('files', files)}
           />
         );
-      case 4:
+      } else {
         return (
           <ContactInfo
             contactInfo={formData.contactInfo}
@@ -187,19 +255,36 @@ const BookingWizard = () => {
             errors={errors.contactInfo || {}}
           />
         );
-      case 5:
+      }
+    } else if (currentStep === 4) {
+      if (needsFileUpload) {
+        return (
+          <ContactInfo
+            contactInfo={formData.contactInfo}
+            onUpdate={(info) => updateFormData('contactInfo', info)}
+            errors={errors.contactInfo || {}}
+          />
+        );
+      } else {
         return (
           <ReviewSubmit
             formData={formData}
             onEdit={goToStep}
           />
         );
-      default:
-        return null;
+      }
+    } else if (currentStep === 5) {
+      return (
+        <ReviewSubmit
+          formData={formData}
+          onEdit={goToStep}
+        />
+      );
     }
+    return null;
   };
 
-  const progress = (currentStep / STEPS.length) * 100;
+  const progress = (currentStep / steps.length) * 100;
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-4xl">
@@ -213,7 +298,7 @@ const BookingWizard = () => {
       <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardContent className="p-0">
           <StepHeader
-            steps={STEPS}
+            steps={steps}
             currentStep={currentStep}
             onStepClick={goToStep}
           />
@@ -238,7 +323,7 @@ const BookingWizard = () => {
                 Previous
               </Button>
 
-              {currentStep < STEPS.length ? (
+              {currentStep < steps.length ? (
                 <Button
                   onClick={nextStep}
                   className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto order-1 sm:order-2"
