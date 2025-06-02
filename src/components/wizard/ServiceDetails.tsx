@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,22 +46,44 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
           </RadioGroup>
         </div>
 
-        <div>
-          <Label htmlFor="pageCount" className="text-base font-medium">
-            Number of Pages
-          </Label>
-          <Select value={serviceDetails.pageCount || ''} onValueChange={(value) => updateField('pageCount', value)}>
-            <SelectTrigger className="mt-2">
-              <SelectValue placeholder="Select page count" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1-5">1-5 pages</SelectItem>
-              <SelectItem value="6-10">6-10 pages</SelectItem>
-              <SelectItem value="11-20">11-20 pages</SelectItem>
-              <SelectItem value="20+">20+ pages</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {serviceDetails.websiteType === 'new' && (
+          <div>
+            <Label htmlFor="websiteCategory" className="text-base font-medium">
+              Website Type
+            </Label>
+            <Select value={serviceDetails.pageCount || ''} onValueChange={(value) => updateField('pageCount', value)}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Select website type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="e-commerce">E-commerce</SelectItem>
+                <SelectItem value="press">Press</SelectItem>
+                <SelectItem value="hostel-booking">Hostel Booking</SelectItem>
+                <SelectItem value="business-page">Business Page</SelectItem>
+                <SelectItem value="one-page">One Page</SelectItem>
+                <SelectItem value="portfolio">Portfolio</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {serviceDetails.websiteType === 'maintenance' && (
+          <div>
+            <Label htmlFor="maintenanceService" className="text-base font-medium">
+              Maintenance Service Needed
+            </Label>
+            <Select value={serviceDetails.pageCount || ''} onValueChange={(value) => updateField('pageCount', value)}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Select maintenance service" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="elementor">Elementor</SelectItem>
+                <SelectItem value="errors">Errors</SelectItem>
+                <SelectItem value="plugin-theme-installation">Plugin/Theme Installation Failed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div>
           <Label htmlFor="features" className="text-base font-medium">
