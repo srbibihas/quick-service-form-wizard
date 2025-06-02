@@ -277,6 +277,27 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
             </SelectContent>
           </Select>
         </div>
+
+        {serviceDetails.exportFormat === 'social-optimized' && (
+          <div>
+            <Label htmlFor="socialMediaFormat" className="text-base font-medium">
+              Social Media Format
+            </Label>
+            <Select value={serviceDetails.socialMediaFormat || ''} onValueChange={(value) => updateField('socialMediaFormat', value)}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Select social media format" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="facebook-feed">Facebook Feed</SelectItem>
+                <SelectItem value="facebook-story">Facebook Story</SelectItem>
+                <SelectItem value="instagram-feed">Instagram Feed</SelectItem>
+                <SelectItem value="instagram-reels">Instagram Reels</SelectItem>
+                <SelectItem value="instagram-story">Instagram Story</SelectItem>
+                <SelectItem value="tiktok-feed">TikTok Feed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
     </div>
   );

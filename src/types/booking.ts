@@ -1,4 +1,3 @@
-
 export interface ServiceDetails {
   // WordPress
   websiteType?: 'new' | 'maintenance';
@@ -18,6 +17,7 @@ export interface ServiceDetails {
   stylePreference?: string;
   rawFootage?: string;
   exportFormat?: string;
+  socialMediaFormat?: string;
 
   // T-shirt Printing
   printingMethod?: string;
