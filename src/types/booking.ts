@@ -14,6 +14,7 @@ export interface ServiceDetails {
 
   // Video Editing
   videoLength?: string;
+  videoLengthUnit?: 'seconds' | 'minutes';
   stylePreference?: string;
   rawFootage?: string;
   exportFormat?: string;

@@ -192,21 +192,34 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
       
       <div className="space-y-4">
         <div>
-          <Label htmlFor="videoLength" className="text-base font-medium">
-            Video Length
-          </Label>
-          <Select value={serviceDetails.videoLength || ''} onValueChange={(value) => updateField('videoLength', value)}>
-            <SelectTrigger className="mt-2">
-              <SelectValue placeholder="Select video length" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="30s">30 seconds</SelectItem>
-              <SelectItem value="1min">1 minute</SelectItem>
-              <SelectItem value="2-3min">2-3 minutes</SelectItem>
-              <SelectItem value="5min">5 minutes</SelectItem>
-              <SelectItem value="10min+">10+ minutes</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label className="text-base font-medium">Video Length</Label>
+          <div className="flex gap-2 mt-2">
+            <Input
+              value={serviceDetails.videoLength || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only numbers (and empty string)
+                if (value === '' || /^\d{1,2}$/.test(value)) {
+                  updateField('videoLength', value);
+                }
+              }}
+              placeholder="Enter duration"
+              className="flex-1"
+              maxLength={2}
+            />
+            <Select 
+              value={serviceDetails.videoLengthUnit || 'minutes'} 
+              onValueChange={(value) => updateField('videoLengthUnit', value)}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="seconds">Seconds</SelectItem>
+                <SelectItem value="minutes">Minutes</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div>
