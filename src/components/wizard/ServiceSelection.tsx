@@ -10,7 +10,7 @@ const services = [
     id: 'wordpress',
     title: 'WordPress',
     description: 'Website development and maintenance services',
-    image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=300&fit=crop&crop=center',
+    image: 'https://images.pexels.com/photos/34600/pexels-photo-34600.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
     features: ['Custom Development', 'Maintenance', 'SEO Optimization', 'Responsive Design'],
     popular: false
   },
@@ -18,7 +18,7 @@ const services = [
     id: 'graphic-design',
     title: 'Graphic Design',
     description: 'Logos, banners, and social media graphics',
-    image: 'https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?w=400&h=300&fit=crop&crop=center',
+    image: 'https://images.pexels.com/photos/1193743/pexels-photo-1193743.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
     features: ['Logo Design', 'Social Media Graphics', 'Banners', 'Brand Identity'],
     popular: true
   },
@@ -26,7 +26,7 @@ const services = [
     id: 'video-editing',
     title: 'Video Editing',
     description: 'Promotional videos and social content',
-    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&h=300&fit=crop&crop=center',
+    image: 'https://images.pexels.com/photos/257904/pexels-photo-257904.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
     features: ['Promotional Videos', 'Social Content', 'Presentations', 'Motion Graphics'],
     popular: false
   },
@@ -34,7 +34,7 @@ const services = [
     id: 'tshirt-printing',
     title: 'T-shirt Printing',
     description: 'DTF & Embroidery custom apparel',
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=300&fit=crop&crop=center',
+    image: 'https://images.pexels.com/photos/5727002/pexels-photo-5727002.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
     features: ['DTF Printing', 'Embroidery', 'Custom Designs', 'Bulk Orders'],
     popular: false
   }
@@ -86,34 +86,38 @@ const ServiceSelection: React.FC<ServiceSelectionProps> = ({
                   ? 'ring-2 ring-blue-500 border-blue-500 shadow-lg scale-105' 
                   : 'hover:border-gray-300'
               }`}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
-                      <img 
-                        src={service.image} 
-                        alt={service.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                <CardContent className="p-0">
+                  {/* Image section with improved design */}
+                  <div className="relative h-40 w-full overflow-hidden rounded-t-lg">
+                    <img 
+                      src={service.image} 
+                      alt={service.title}
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                     {service.popular && (
-                      <Badge className="bg-gradient-to-r from-orange-400 to-pink-400 text-white">
+                      <Badge className="absolute top-3 right-3 bg-gradient-to-r from-orange-400 to-pink-400 text-white shadow-lg">
                         Popular
                       </Badge>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {service.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {service.description}
-                  </p>
-                  <div className="space-y-2">
-                    {service.features.map((feature, index) => (
-                      <div key={index} className="flex items-center text-sm text-gray-500">
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
-                        {feature}
-                      </div>
-                    ))}
+                  
+                  {/* Content section */}
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {service.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 text-sm">
+                      {service.description}
+                    </p>
+                    <div className="space-y-2">
+                      {service.features.map((feature, index) => (
+                        <div key={index} className="flex items-center text-sm text-gray-500">
+                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2 flex-shrink-0"></span>
+                          <span className="truncate">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
