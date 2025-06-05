@@ -44,7 +44,8 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
     Object.entries(formData.serviceDetails).forEach(([key, value]) => {
       if (value) {
         const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        message += `• ${formattedKey}: ${value}\n`;
+        const formattedValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+        message += `• ${formattedKey}: ${formattedValue}\n`;
       }
     });
 
@@ -71,6 +72,14 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const formatValue = (value: any): string => {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number') return value.toString();
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
   };
 
   const serviceNames = {
@@ -119,7 +128,7 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
                 return (
                   <div key={key} className="grid grid-cols-1 gap-1">
                     <span className="text-sm text-gray-600 font-medium">{formattedKey}:</span>
-                    <span className="text-sm font-medium text-gray-900 break-words">{value}</span>
+                    <span className="text-sm font-medium text-gray-900 break-words">{formatValue(value)}</span>
                   </div>
                 );
               })}
