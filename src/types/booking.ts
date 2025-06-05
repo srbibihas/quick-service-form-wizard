@@ -24,6 +24,8 @@ export interface ServiceDetails {
   quantity?: string;
   sizes?: string;
   colors?: string;
+  embroideryType?: string;
+  embroideryPlacement?: string;
 }
 
 export interface ProjectDetails {

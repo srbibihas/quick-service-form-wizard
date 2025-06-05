@@ -356,6 +356,41 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
           </RadioGroup>
         </div>
 
+        {serviceDetails.printingMethod === 'embroidery' && (
+          <>
+            <div>
+              <Label htmlFor="embroideryType" className="text-base font-medium">
+                Embroidery Type
+              </Label>
+              <Select value={serviceDetails.embroideryType || ''} onValueChange={(value) => updateField('embroideryType', value)}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select embroidery type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="icon">Icon</SelectItem>
+                  <SelectItem value="logo">Logo</SelectItem>
+                  <SelectItem value="design">Design</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="embroideryPlacement" className="text-base font-medium">
+                Design Placement
+              </Label>
+              <Select value={serviceDetails.embroideryPlacement || ''} onValueChange={(value) => updateField('embroideryPlacement', value)}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select placement" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="front">Front</SelectItem>
+                  <SelectItem value="back">Back</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+
         <div>
           <Label htmlFor="quantity" className="text-base font-medium">
             Quantity Needed
