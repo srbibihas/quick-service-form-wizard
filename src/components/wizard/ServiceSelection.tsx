@@ -10,8 +10,8 @@ const services = [
     id: 'wordpress',
     title: 'WordPress',
     description: 'Website development and maintenance services',
-    image: 'https://images.pexels.com/photos/34600/pexels-photo-34600.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop',
-    features: ['Custom Development', 'Maintenance', 'SEO Optimization', 'Responsive Design'],
+    image: 'https://images.pexels.com/photos/326514/pexels-photo-326514.jpeg?auto=compress&cs=tinysrgb&w=600&fit=crop',
+    features: ['Maintenance', 'SEO Optimization', 'Responsive Design'],
     popular: false
   },
   {
