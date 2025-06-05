@@ -360,44 +360,35 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
           <Label htmlFor="quantity" className="text-base font-medium">
             Quantity Needed
           </Label>
-          <Select value={serviceDetails.quantity || ''} onValueChange={(value) => updateField('quantity', value)}>
-            <SelectTrigger className="mt-2">
-              <SelectValue placeholder="Select quantity" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1-10">1-10 pieces</SelectItem>
-              <SelectItem value="11-25">11-25 pieces</SelectItem>
-              <SelectItem value="26-50">26-50 pieces</SelectItem>
-              <SelectItem value="51-100">51-100 pieces</SelectItem>
-              <SelectItem value="100+">100+ pieces</SelectItem>
-            </SelectContent>
-          </Select>
+          <Input
+            id="quantity"
+            type="number"
+            value={serviceDetails.quantity || ''}
+            onChange={(e) => updateField('quantity', e.target.value)}
+            placeholder="Enter quantity"
+            className="mt-2"
+            min="1"
+          />
         </div>
 
         <div>
           <Label htmlFor="sizes" className="text-base font-medium">
             T-shirt Sizes Needed
           </Label>
-          <Input
-            id="sizes"
-            value={serviceDetails.sizes || ''}
-            onChange={(e) => updateField('sizes', e.target.value)}
-            placeholder="E.g., S(2), M(5), L(8), XL(5)"
-            className="mt-2"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="colors" className="text-base font-medium">
-            T-shirt Colors
-          </Label>
-          <Input
-            id="colors"
-            value={serviceDetails.colors || ''}
-            onChange={(e) => updateField('colors', e.target.value)}
-            placeholder="E.g., Black, White, Navy Blue"
-            className="mt-2"
-          />
+          <Select value={serviceDetails.sizes || ''} onValueChange={(value) => updateField('sizes', value)}>
+            <SelectTrigger className="mt-2">
+              <SelectValue placeholder="Select sizes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="xs">XS</SelectItem>
+              <SelectItem value="s">S</SelectItem>
+              <SelectItem value="m">M</SelectItem>
+              <SelectItem value="l">L</SelectItem>
+              <SelectItem value="xl">XL</SelectItem>
+              <SelectItem value="xxl">XXL</SelectItem>
+              <SelectItem value="multiple">Multiple Sizes</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>
