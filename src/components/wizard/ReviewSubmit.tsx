@@ -89,6 +89,10 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
     'tshirt-printing': 'T-shirt Printing'
   };
 
+  // Services that should hide the uploaded files section
+  const servicesWithoutFiles = ['wordpress', 'video-editing'];
+  const shouldShowFiles = !servicesWithoutFiles.includes(formData.service);
+
   return (
     <div className="w-full space-y-6">
       <div className="text-center">
@@ -136,42 +140,44 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
           </CardContent>
         </Card>
 
-        {/* Files */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg">Uploaded Files ({formData.files.length})</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => onEdit(3)} className="h-8 w-8 p-0">
-              <Edit className="w-4 h-4" />
-            </Button>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {formData.files.length > 0 ? (
-              <div className="space-y-3">
-                {formData.files.map((file) => (
-                  <div key={file.id} className="bg-gray-50 p-3 rounded-lg">
-                    <div className="flex items-start space-x-3">
-                      <File className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm truncate">{file.name}</p>
-                        <p className="text-xs text-gray-500 mt-1">{formatFileSize(file.size)}</p>
-                        {formData.service === 'tshirt-printing' && file.type.startsWith('image/') && (
-                          <Badge 
-                            variant={file.isTransparent ? 'default' : 'destructive'} 
-                            className="text-xs mt-2"
-                          >
-                            {file.isTransparent ? 'Transparent' : 'No transparency'}
-                          </Badge>
-                        )}
+        {/* Files - Only show for services that require files */}
+        {shouldShowFiles && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-lg">Uploaded Files ({formData.files.length})</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => onEdit(3)} className="h-8 w-8 p-0">
+                <Edit className="w-4 h-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {formData.files.length > 0 ? (
+                <div className="space-y-3">
+                  {formData.files.map((file) => (
+                    <div key={file.id} className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-start space-x-3">
+                        <File className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm truncate">{file.name}</p>
+                          <p className="text-xs text-gray-500 mt-1">{formatFileSize(file.size)}</p>
+                          {formData.service === 'tshirt-printing' && file.type.startsWith('image/') && (
+                            <Badge 
+                              variant={file.isTransparent ? 'default' : 'destructive'} 
+                              className="text-xs mt-2"
+                            >
+                              {file.isTransparent ? 'Transparent' : 'No transparency'}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-sm">No files uploaded</p>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No files uploaded</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Contact Info */}
         <Card>
