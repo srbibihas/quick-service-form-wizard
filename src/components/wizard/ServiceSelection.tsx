@@ -11,7 +11,7 @@ const services = [
     id: 'wordpress',
     title: 'WordPress',
     description: 'Professional website development and ongoing maintenance services',
-    image: 'https://images.pexels.com/photos/34600/pexels-photo-34600.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
+    image: 'https://images.pexels.com/photos/326514/pexels-photo-326514.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
     features: ['Custom Design', 'SEO Optimization', 'Responsive Layout', 'Maintenance Support'],
     popular: false,
     color: 'from-blue-500 to-cyan-500'
