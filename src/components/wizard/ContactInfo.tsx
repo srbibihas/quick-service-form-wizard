@@ -20,6 +20,51 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
     onUpdate({ ...contactInfo, [field]: value });
   };
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateName = (name: string): boolean => {
+    // Only allow letters and spaces
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    return nameRegex.test(name);
+  };
+
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-digit characters except +
+    let cleaned = value.replace(/[^\d+]/g, '');
+    
+    // If doesn't start with +, add +212
+    if (!cleaned.startsWith('+')) {
+      if (cleaned.startsWith('212')) {
+        cleaned = '+' + cleaned;
+      } else {
+        cleaned = '+212' + cleaned.replace(/^0/, ''); // Remove leading 0 if present
+      }
+    }
+    
+    return cleaned;
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Basic international phone validation
+    const phoneRegex = /^\+\d{10,15}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const handleNameChange = (value: string) => {
+    // Only update if the value contains only letters and spaces
+    if (value === '' || validateName(value)) {
+      updateField('name', value);
+    }
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value);
+    updateField('phone', formatted);
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center">
@@ -35,13 +80,16 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
           <Input
             id="name"
             value={contactInfo.name}
-            onChange={(e) => updateField('name', e.target.value)}
-            placeholder="Enter your full name"
+            onChange={(e) => handleNameChange(e.target.value)}
+            placeholder="Enter your full name (letters only)"
             className={`mt-2 ${errors.name ? 'border-red-500' : ''}`}
           />
           {errors.name && (
             <p className="text-red-500 text-sm mt-1">{errors.name}</p>
           )}
+          <p className="text-sm text-gray-500 mt-1">
+            Only letters and spaces are allowed
+          </p>
         </div>
 
         <div>
@@ -51,15 +99,15 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
           <Input
             id="phone"
             value={contactInfo.phone}
-            onChange={(e) => updateField('phone', e.target.value)}
-            placeholder="+1 (555) 123-4567"
+            onChange={(e) => handlePhoneChange(e.target.value)}
+            placeholder="+212 6XXXXXXXX"
             className={`mt-2 ${errors.phone ? 'border-red-500' : ''}`}
           />
           {errors.phone && (
             <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
           )}
           <p className="text-sm text-gray-500 mt-1">
-            Include country code for international numbers
+            Include country code (default: +212 for Morocco)
           </p>
         </div>
 

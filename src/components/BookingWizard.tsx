@@ -129,6 +129,95 @@ const BookingWizard = () => {
     }));
   };
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateName = (name: string): boolean => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    return nameRegex.test(name) && name.trim().length > 0;
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    const phoneRegex = /^\+\d{10,15}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validateServiceDetails = (service: string, details: any): Record<string, string> => {
+    const errors: Record<string, string> = {};
+
+    switch (service) {
+      case 'wordpress':
+        if (!details.websiteType) {
+          errors.websiteType = 'Project type is required';
+        }
+        if (!details.pageCount) {
+          if (details.websiteType === 'new') {
+            errors.pageCount = 'Website type is required';
+          } else if (details.websiteType === 'maintenance') {
+            errors.pageCount = 'Maintenance service is required';
+          }
+        }
+        if (details.websiteType === 'maintenance' && !details.existingUrl) {
+          errors.existingUrl = 'Website URL is required for maintenance';
+        }
+        break;
+
+      case 'graphic-design':
+        if (!details.designType) {
+          errors.designType = 'Design type is required';
+        }
+        if (!details.dimensions) {
+          errors.dimensions = 'Dimensions/format is required';
+        }
+        if (!details.conceptCount) {
+          errors.conceptCount = 'Number of concepts is required';
+        }
+        break;
+
+      case 'video-editing':
+        if (!details.videoLength) {
+          errors.videoLength = 'Video length is required';
+        }
+        if (!details.stylePreference) {
+          errors.stylePreference = 'Style preference is required';
+        }
+        if (!details.rawFootage) {
+          errors.rawFootage = 'Raw footage availability is required';
+        }
+        if (!details.exportFormat) {
+          errors.exportFormat = 'Export format is required';
+        }
+        if (details.exportFormat === 'social-optimized' && !details.socialMediaFormat) {
+          errors.socialMediaFormat = 'Social media format is required';
+        }
+        break;
+
+      case 'tshirt-printing':
+        if (!details.printingMethod) {
+          errors.printingMethod = 'Printing method is required';
+        }
+        if (!details.quantity) {
+          errors.quantity = 'Quantity is required';
+        }
+        if (!details.sizes) {
+          errors.sizes = 'T-shirt sizes are required';
+        }
+        if (details.printingMethod === 'embroidery') {
+          if (!details.embroideryType) {
+            errors.embroideryType = 'Embroidery type is required';
+          }
+          if (!details.embroideryPlacement) {
+            errors.embroideryPlacement = 'Design placement is required';
+          }
+        }
+        break;
+    }
+
+    return errors;
+  };
+
   const validateStep = (step: number): boolean => {
     const newErrors: FormErrors = {};
 
@@ -139,7 +228,10 @@ const BookingWizard = () => {
         }
         break;
       case 2:
-        // Service-specific validation will be handled in ServiceDetails component
+        const serviceErrors = validateServiceDetails(formData.service, formData.serviceDetails);
+        if (Object.keys(serviceErrors).length > 0) {
+          newErrors.serviceDetails = serviceErrors;
+        }
         break;
       case 3:
         if (needsFileUpload) {
@@ -147,28 +239,56 @@ const BookingWizard = () => {
           break;
         } else {
           // This is contact info step for services without file upload
+          const contactErrors: Record<string, string> = {};
+          
           if (!formData.contactInfo.name) {
-            newErrors.contactInfo = { name: 'Name is required' };
+            contactErrors.name = 'Name is required';
+          } else if (!validateName(formData.contactInfo.name)) {
+            contactErrors.name = 'Name must contain only letters and spaces';
           }
+          
           if (!formData.contactInfo.phone) {
-            newErrors.contactInfo = { ...newErrors.contactInfo, phone: 'Phone number is required' };
+            contactErrors.phone = 'Phone number is required';
+          } else if (!validatePhoneNumber(formData.contactInfo.phone)) {
+            contactErrors.phone = 'Please enter a valid phone number with country code';
           }
+          
           if (!formData.contactInfo.email) {
-            newErrors.contactInfo = { ...newErrors.contactInfo, email: 'Email is required' };
+            contactErrors.email = 'Email is required';
+          } else if (!validateEmail(formData.contactInfo.email)) {
+            contactErrors.email = 'Please enter a valid email address';
+          }
+
+          if (Object.keys(contactErrors).length > 0) {
+            newErrors.contactInfo = contactErrors;
           }
         }
         break;
       case 4:
         if (needsFileUpload) {
           // This is contact info step for services with file upload
+          const contactErrors: Record<string, string> = {};
+          
           if (!formData.contactInfo.name) {
-            newErrors.contactInfo = { name: 'Name is required' };
+            contactErrors.name = 'Name is required';
+          } else if (!validateName(formData.contactInfo.name)) {
+            contactErrors.name = 'Name must contain only letters and spaces';
           }
+          
           if (!formData.contactInfo.phone) {
-            newErrors.contactInfo = { ...newErrors.contactInfo, phone: 'Phone number is required' };
+            contactErrors.phone = 'Phone number is required';
+          } else if (!validatePhoneNumber(formData.contactInfo.phone)) {
+            contactErrors.phone = 'Please enter a valid phone number with country code';
           }
+          
           if (!formData.contactInfo.email) {
-            newErrors.contactInfo = { ...newErrors.contactInfo, email: 'Email is required' };
+            contactErrors.email = 'Email is required';
+          } else if (!validateEmail(formData.contactInfo.email)) {
+            contactErrors.email = 'Please enter a valid email address';
+          }
+
+          if (Object.keys(contactErrors).length > 0) {
+            newErrors.contactInfo = contactErrors;
           }
         }
         break;
@@ -208,18 +328,29 @@ const BookingWizard = () => {
       case 1:
         return !!formData.service;
       case 2:
-        return true; // Service details validation will be handled in component
+        const serviceErrors = validateServiceDetails(formData.service, formData.serviceDetails);
+        return Object.keys(serviceErrors).length === 0;
       case 3:
         if (needsFileUpload) {
           return true; // File upload step, no validation needed
         } else {
           // Contact info step for services without file upload
-          return !!(formData.contactInfo.name && formData.contactInfo.phone && formData.contactInfo.email);
+          return !!(formData.contactInfo.name && 
+                   validateName(formData.contactInfo.name) &&
+                   formData.contactInfo.phone && 
+                   validatePhoneNumber(formData.contactInfo.phone) &&
+                   formData.contactInfo.email &&
+                   validateEmail(formData.contactInfo.email));
         }
       case 4:
         if (needsFileUpload) {
           // Contact info step for services with file upload
-          return !!(formData.contactInfo.name && formData.contactInfo.phone && formData.contactInfo.email);
+          return !!(formData.contactInfo.name && 
+                   validateName(formData.contactInfo.name) &&
+                   formData.contactInfo.phone && 
+                   validatePhoneNumber(formData.contactInfo.phone) &&
+                   formData.contactInfo.email &&
+                   validateEmail(formData.contactInfo.email));
         }
         return true;
       default:
