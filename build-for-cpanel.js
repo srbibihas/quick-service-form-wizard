@@ -5,16 +5,20 @@ import { fileURLToPath } from 'url';
 
 // Get current directory in ES modules
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(__dirname);
 
-// Create .htaccess content for React Router support on cPanel
+// Get subdirectory from command line argument or default to root
+const subdirectory = process.argv[2] || '';
+const basePath = subdirectory ? `/${subdirectory}` : '';
+
+// Create .htaccess content for React Router support on cPanel with subdirectory support
 const htaccessContent = `RewriteEngine On
-RewriteBase /
+RewriteBase ${basePath}/
 
 # Handle Angular and React Routes
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.html [L]
+RewriteRule . ${basePath}/index.html [L]
 
 # Cache static assets
 <IfModule mod_expires.c>
@@ -50,6 +54,12 @@ function createHtaccess() {
     if (fs.existsSync(distPath)) {
         fs.writeFileSync(htaccessPath, htaccessContent);
         console.log('✅ .htaccess file created successfully in dist folder');
+        if (subdirectory) {
+            console.log(`📁 Configured for subdirectory: /${subdirectory}`);
+            console.log(`🌐 Your app will be accessible at: yourdomain.com/${subdirectory}`);
+        } else {
+            console.log('🌐 Configured for root domain deployment');
+        }
     } else {
         console.log('❌ dist folder not found. Please run "npm run build" first.');
     }
