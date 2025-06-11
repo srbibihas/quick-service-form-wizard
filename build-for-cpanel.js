@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 // Get current directory in ES modules
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__dirname);
+const __dirname = path.dirname(__filename);
 
 // Get subdirectory from command line argument or default to root
 const subdirectory = process.argv[2] || '';
@@ -15,10 +15,15 @@ const basePath = subdirectory ? `/${subdirectory}` : '';
 const htaccessContent = `RewriteEngine On
 RewriteBase ${basePath}/
 
-# Handle Angular and React Routes
+# Handle client-side routing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . ${basePath}/index.html [L]
+
+# Security headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"
 
 # Cache static assets
 <IfModule mod_expires.c>
@@ -43,7 +48,11 @@ RewriteRule . ${basePath}/index.html [L]
     AddOutputFilterByType DEFLATE application/rss+xml
     AddOutputFilterByType DEFLATE application/javascript
     AddOutputFilterByType DEFLATE application/x-javascript
-</IfModule>`;
+</IfModule>
+
+# Force HTTPS (optional - uncomment if you have SSL)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]`;
 
 // Function to create .htaccess file in dist folder
 function createHtaccess() {
@@ -57,9 +66,17 @@ function createHtaccess() {
         if (subdirectory) {
             console.log(`📁 Configured for subdirectory: /${subdirectory}`);
             console.log(`🌐 Your app will be accessible at: yourdomain.com/${subdirectory}`);
+            console.log(`📋 RewriteBase set to: ${basePath}/`);
         } else {
             console.log('🌐 Configured for root domain deployment');
+            console.log('📋 RewriteBase set to: /');
         }
+        
+        // Show the generated .htaccess content for verification
+        console.log('\n📄 Generated .htaccess content:');
+        console.log('================================');
+        console.log(htaccessContent);
+        console.log('================================\n');
     } else {
         console.log('❌ dist folder not found. Please run "npm run build" first.');
     }

@@ -7,7 +7,9 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   // Set base path for subdirectory deployment
-  base: process.env.NODE_ENV === 'production' ? (process.env.VITE_BASE_PATH || '/') : '/',
+  base: process.env.NODE_ENV === 'production' 
+    ? (process.env.VITE_BASE_PATH || '/') 
+    : '/',
   server: {
     host: "::",
     port: 8080,
@@ -20,6 +22,15 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
     },
   },
 }));
