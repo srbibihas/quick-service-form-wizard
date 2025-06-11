@@ -9,8 +9,14 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Get the base path from Vite's BASE_URL
-const basename = import.meta.env.BASE_URL !== '/' ? import.meta.env.BASE_URL : undefined;
+// Get the base path from Vite's BASE_URL and remove trailing slash
+const baseUrl = import.meta.env.BASE_URL;
+const basename = baseUrl !== '/' ? baseUrl.replace(/\/$/, '') : undefined;
+
+// Debug logging
+console.log('BASE_URL:', import.meta.env.BASE_URL);
+console.log('basename:', basename);
+console.log('Current location:', window.location.pathname);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
