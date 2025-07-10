@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { ServiceDetails as ServiceDetailsType } from '@/types/booking';
+import PricingDisplay from './PricingDisplay';
 
 interface ServiceDetailsProps {
   service: string;
@@ -82,12 +83,12 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                 <SelectValue placeholder="Select website type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="e-commerce">E-commerce</SelectItem>
-                <SelectItem value="press">Press</SelectItem>
-                <SelectItem value="hostel-booking">Hostel Booking</SelectItem>
-                <SelectItem value="business-page">Business Page</SelectItem>
-                <SelectItem value="one-page">One Page</SelectItem>
-                <SelectItem value="portfolio">Portfolio</SelectItem>
+                <SelectItem value="e-commerce">E-commerce (4500 DHS)</SelectItem>
+                <SelectItem value="hostel-booking">Hostel Booking (4000 DHS)</SelectItem>
+                <SelectItem value="business-page">Business Page (3200 DHS)</SelectItem>
+                <SelectItem value="one-page">One Page (3200 DHS)</SelectItem>
+                <SelectItem value="portfolio">Portfolio (3200 DHS)</SelectItem>
+                <SelectItem value="press">Press (3200 DHS)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -103,9 +104,9 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                 <SelectValue placeholder="Select maintenance service" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="elementor">Elementor</SelectItem>
-                <SelectItem value="errors">Errors</SelectItem>
-                <SelectItem value="plugin-theme-installation">Plugin/Theme Installation Failed</SelectItem>
+                <SelectItem value="elementor">Elementor (750 DHS)</SelectItem>
+                <SelectItem value="errors">Errors (500 DHS)</SelectItem>
+                <SelectItem value="plugin-theme-installation">Plugin/Theme Installation Failed (800 DHS)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -156,12 +157,12 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
               <SelectValue placeholder="Select design type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="logo">Logo Design</SelectItem>
-              <SelectItem value="banner">Banner/Header</SelectItem>
-              <SelectItem value="social">Social Media Graphics</SelectItem>
-              <SelectItem value="business-card">Business Card</SelectItem>
-              <SelectItem value="flyer">Flyer/Poster</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="logo">Logo Design (350 DHS)</SelectItem>
+              <SelectItem value="banner">Banner/Header (150 DHS)</SelectItem>
+              <SelectItem value="social">Social Media Graphics (80 DHS)</SelectItem>
+              <SelectItem value="business-card">Business Card (50 DHS)</SelectItem>
+              <SelectItem value="flyer">Flyer/Poster (90 DHS)</SelectItem>
+              <SelectItem value="brand-identity">Brand Identity Package (1200 DHS)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -234,7 +235,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
               maxLength={2}
             />
             <Select 
-              value={serviceDetails.videoLengthUnit || 'minutes'} 
+              value={serviceDetails.videoLengthUnit || 'seconds'} 
               onValueChange={(value) => updateField('videoLengthUnit', value)}
             >
               <SelectTrigger className="w-32">
@@ -245,6 +246,9 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                 <SelectItem value="minutes">Minutes</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="text-sm text-gray-600 mt-2">
+            Pricing: Less than 10 sec (750 DHS) • 10-30 sec (1000 DHS) • Up to 30 sec (1400 DHS)
           </div>
         </div>
 
@@ -347,7 +351,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="dtf" id="dtf" />
-              <Label htmlFor="dtf">DTF (Direct to Film)</Label>
+              <Label htmlFor="dtf">DTF (Direct to Film) - 120 DHS</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="embroidery" id="embroidery" />
@@ -358,6 +362,21 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
 
         {serviceDetails.printingMethod === 'embroidery' && (
           <>
+            <div>
+              <Label htmlFor="embroideryGarmentType" className="text-base font-medium">
+                Garment Type
+              </Label>
+              <Select value={serviceDetails.embroideryGarmentType || ''} onValueChange={(value) => updateField('embroideryGarmentType', value)}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select garment type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tshirt">T-shirt (150 DHS)</SelectItem>
+                  <SelectItem value="hoodie">Hoodie (300 DHS)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div>
               <Label htmlFor="embroideryType" className="text-base font-medium">
                 Embroidery Type
@@ -449,8 +468,11 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-6">
       {renderContent()}
+      
+      {/* Show pricing if service details are filled */}
+      <PricingDisplay formData={{ service, serviceDetails, files: [], contactInfo: { name: '', phone: '', email: '', preferredContact: 'whatsapp' } }} />
     </div>
   );
 };

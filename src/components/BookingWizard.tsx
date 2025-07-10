@@ -205,6 +205,9 @@ const BookingWizard = () => {
           errors.sizes = 'T-shirt sizes are required';
         }
         if (details.printingMethod === 'embroidery') {
+          if (!details.embroideryGarmentType) {
+            errors.embroideryGarmentType = 'Garment type is required';
+          }
           if (!details.embroideryType) {
             errors.embroideryType = 'Embroidery type is required';
           }

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Edit, File, Send } from 'lucide-react';
 import { FormData } from '@/types/booking';
+import PricingDisplay from './PricingDisplay';
 
 interface ReviewSubmitProps {
   formData: FormData;
@@ -101,6 +102,9 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
       </div>
 
       <div className="space-y-4">
+        {/* Pricing Display */}
+        <PricingDisplay formData={formData} />
+
         {/* Service Selection */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
