@@ -14,7 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          amount: number
+          contact_info: Json
+          created_at: string
+          currency: string | null
+          dodo_checkout_url: string | null
+          dodo_payment_id: string | null
+          files: Json | null
+          id: string
+          service: string
+          service_details: Json
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          contact_info?: Json
+          created_at?: string
+          currency?: string | null
+          dodo_checkout_url?: string | null
+          dodo_payment_id?: string | null
+          files?: Json | null
+          id?: string
+          service: string
+          service_details?: Json
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          contact_info?: Json
+          created_at?: string
+          currency?: string | null
+          dodo_checkout_url?: string | null
+          dodo_payment_id?: string | null
+          files?: Json | null
+          id?: string
+          service?: string
+          service_details?: Json
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_logs: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          event_data?: Json
+          event_type: string
+          id?: string
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_logs_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
