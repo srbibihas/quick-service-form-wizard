@@ -351,13 +351,33 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="dtf" id="dtf" />
-              <Label htmlFor="dtf">DTF (Direct to Film) - 120 DHS</Label>
+              <Label htmlFor="dtf">DTF (Direct to Film)</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="embroidery" id="embroidery" />
               <Label htmlFor="embroidery">Embroidery</Label>
             </div>
           </RadioGroup>
+        </div>
+
+        <div>
+          <Label htmlFor="quantity" className="text-base font-medium">
+            Quantity Needed
+          </Label>
+          <Input
+            id="quantity"
+            type="number"
+            value={serviceDetails.quantity || ''}
+            onChange={(e) => updateField('quantity', e.target.value)}
+            placeholder="Enter quantity"
+            className="mt-2"
+            min="1"
+          />
+          {serviceDetails.printingMethod === 'dtf' && (
+            <div className="text-sm text-gray-600 mt-2">
+              Pricing: Less than 5 (120 DHS each) • 5-10 pieces (70 DHS each) • More than 10 (50 DHS each)
+            </div>
+          )}
         </div>
 
         {serviceDetails.printingMethod === 'embroidery' && (
@@ -371,8 +391,8 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                   <SelectValue placeholder="Select garment type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tshirt">T-shirt (150 DHS)</SelectItem>
-                  <SelectItem value="hoodie">Hoodie (300 DHS)</SelectItem>
+                  <SelectItem value="tshirt">T-shirt</SelectItem>
+                  <SelectItem value="hoodie">Hoodie</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -386,11 +406,35 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                   <SelectValue placeholder="Select embroidery type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="icon">Icon</SelectItem>
-                  <SelectItem value="logo">Logo</SelectItem>
                   <SelectItem value="design">Design</SelectItem>
+                  <SelectItem value="logo">Logo</SelectItem>
                 </SelectContent>
               </Select>
+              
+              {serviceDetails.embroideryGarmentType && serviceDetails.quantity && (
+                <div className="text-sm text-gray-600 mt-2">
+                  {serviceDetails.embroideryGarmentType === 'hoodie' && (
+                    <>
+                      {serviceDetails.embroideryType === 'design' && (
+                        <div>Design pricing: Less than 5 (300 DHS each) • 5-10 pieces (150 DHS each) • More than 10 (100 DHS each)</div>
+                      )}
+                      {serviceDetails.embroideryType === 'logo' && (
+                        <div>Logo pricing: Less than 5 (200 DHS each) • 5-10 pieces (120 DHS each) • More than 10 (80 DHS each)</div>
+                      )}
+                    </>
+                  )}
+                  {serviceDetails.embroideryGarmentType === 'tshirt' && (
+                    <>
+                      {serviceDetails.embroideryType === 'design' && (
+                        <div>Design pricing: Less than 5 (150 DHS each) • 5-10 pieces (95 DHS each) • More than 10 (80 DHS each)</div>
+                      )}
+                      {serviceDetails.embroideryType === 'logo' && (
+                        <div>Logo pricing: Less than 5 (95 DHS each) • 5-10 pieces (70 DHS each) • More than 10 (55 DHS each)</div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>
@@ -409,21 +453,6 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
             </div>
           </>
         )}
-
-        <div>
-          <Label htmlFor="quantity" className="text-base font-medium">
-            Quantity Needed
-          </Label>
-          <Input
-            id="quantity"
-            type="number"
-            value={serviceDetails.quantity || ''}
-            onChange={(e) => updateField('quantity', e.target.value)}
-            placeholder="Enter quantity"
-            className="mt-2"
-            min="1"
-          />
-        </div>
 
         <div>
           <Label htmlFor="sizes" className="text-base font-medium">

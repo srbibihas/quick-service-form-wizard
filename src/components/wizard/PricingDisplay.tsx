@@ -46,15 +46,27 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({ formData }) => {
         break;
 
       case 'tshirt-printing':
-        if (serviceDetails.printingMethod === 'dtf') {
-          return PRICING['tshirt-printing'].dtf;
+        if (serviceDetails.printingMethod === 'dtf' && serviceDetails.quantity) {
+          const quantity = parseInt(serviceDetails.quantity);
+          if (quantity < 5) return PRICING['tshirt-printing'].dtf['less-than-5'];
+          if (quantity <= 10) return PRICING['tshirt-printing'].dtf['5-to-10'];
+          return PRICING['tshirt-printing'].dtf['more-than-10'];
         }
-        if (serviceDetails.printingMethod === 'embroidery' && serviceDetails.embroideryGarmentType) {
-          if (serviceDetails.embroideryGarmentType === 'hoodie') {
-            return PRICING['tshirt-printing']['embroidery-hoodie'];
-          } else {
-            return PRICING['tshirt-printing']['embroidery-tshirt'];
-          }
+        
+        if (serviceDetails.printingMethod === 'embroidery' && 
+            serviceDetails.embroideryGarmentType && 
+            serviceDetails.embroideryType && 
+            serviceDetails.quantity) {
+          const quantity = parseInt(serviceDetails.quantity);
+          const garmentType = serviceDetails.embroideryGarmentType as 'hoodie' | 'tshirt';
+          const embroideryType = serviceDetails.embroideryType as 'design' | 'logo';
+          
+          let quantityKey: 'less-than-5' | '5-to-10' | 'more-than-10';
+          if (quantity < 5) quantityKey = 'less-than-5';
+          else if (quantity <= 10) quantityKey = '5-to-10';
+          else quantityKey = 'more-than-10';
+          
+          return PRICING['tshirt-printing'].embroidery[garmentType][embroideryType][quantityKey] || null;
         }
         break;
     }

@@ -107,8 +107,36 @@ export const PRICING = {
     'long': { price: 1400, currency: 'DHS', description: 'Up to 30 seconds' }
   },
   'tshirt-printing': {
-    'dtf': { price: 120, currency: 'DHS', description: 'DTF Printing' },
-    'embroidery-tshirt': { price: 150, currency: 'DHS', description: 'Embroidery on T-shirt' },
-    'embroidery-hoodie': { price: 300, currency: 'DHS', description: 'Embroidery on Hoodie' }
+    dtf: {
+      'less-than-5': { price: 120, currency: 'DHS', description: 'DTF Printing (Less than 5 pieces)' },
+      '5-to-10': { price: 70, currency: 'DHS', description: 'DTF Printing (5 to 10 pieces)' },
+      'more-than-10': { price: 50, currency: 'DHS', description: 'DTF Printing (More than 10 pieces)' }
+    },
+    embroidery: {
+      hoodie: {
+        design: {
+          'less-than-5': { price: 300, currency: 'DHS', description: 'Hoodie Embroidery Design (Less than 5 pieces)' },
+          '5-to-10': { price: 150, currency: 'DHS', description: 'Hoodie Embroidery Design (5 to 10 pieces)' },
+          'more-than-10': { price: 100, currency: 'DHS', description: 'Hoodie Embroidery Design (More than 10 pieces)' }
+        },
+        logo: {
+          'less-than-5': { price: 200, currency: 'DHS', description: 'Hoodie Embroidery Logo (Less than 5 pieces)' },
+          '5-to-10': { price: 120, currency: 'DHS', description: 'Hoodie Embroidery Logo (5 to 10 pieces)' },
+          'more-than-10': { price: 80, currency: 'DHS', description: 'Hoodie Embroidery Logo (More than 10 pieces)' }
+        }
+      },
+      tshirt: {
+        design: {
+          'less-than-5': { price: 150, currency: 'DHS', description: 'T-shirt Embroidery Design (Less than 5 pieces)' },
+          '5-to-10': { price: 95, currency: 'DHS', description: 'T-shirt Embroidery Design (5 to 10 pieces)' },
+          'more-than-10': { price: 80, currency: 'DHS', description: 'T-shirt Embroidery Design (More than 10 pieces)' }
+        },
+        logo: {
+          'less-than-5': { price: 95, currency: 'DHS', description: 'T-shirt Embroidery Logo (Less than 5 pieces)' },
+          '5-to-10': { price: 70, currency: 'DHS', description: 'T-shirt Embroidery Logo (5 to 10 pieces)' },
+          'more-than-10': { price: 55, currency: 'DHS', description: 'T-shirt Embroidery Logo (More than 10 pieces)' }
+        }
+      }
+    }
   }
 } as const;
