@@ -19,35 +19,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Get user from auth header
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid authorization' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const { service, serviceDetails, contactInfo, files, amount, currency = 'MAD' } = await req.json();
 
-    console.log('Creating payment for user:', user.id, 'Amount:', amount, currency);
+    console.log('Creating anonymous payment for service:', service, 'Amount:', amount, currency);
 
-    // Create booking record first
+    // Create booking record without user_id (anonymous booking)
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert({
-        user_id: user.id,
+        user_id: null, // Anonymous booking
         service,
         service_details: serviceDetails,
         contact_info: contactInfo,
@@ -87,7 +67,6 @@ serve(async (req) => {
       webhook_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/dodo-webhook`,
       metadata: {
         booking_id: booking.id,
-        user_id: user.id,
         service: service
       }
     };

@@ -58,17 +58,7 @@ export const usePayment = () => {
     try {
       console.log('Creating payment for:', formData.service, 'Amount:', amount, currency);
       
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to complete your order",
-          variant: "destructive"
-        });
-        return null;
-      }
-
+      // Remove authentication requirement - call function directly
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
           service: formData.service,
@@ -77,9 +67,6 @@ export const usePayment = () => {
           files: formData.files,
           amount: amount,
           currency: currency
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
         }
       });
 
@@ -129,17 +116,8 @@ export const usePayment = () => {
 
   const verifyPayment = async (bookingId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('Authentication required');
-      }
-
       const { data, error } = await supabase.functions.invoke('verify-payment', {
-        body: { booking_id: bookingId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+        body: { booking_id: bookingId }
       });
 
       if (error) {
