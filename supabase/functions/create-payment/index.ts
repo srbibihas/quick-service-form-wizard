@@ -78,6 +78,7 @@ serve(async (req) => {
     }
 
     console.log('DODO API key found, length:', dodoApiKey.length);
+    console.log('DODO API key first 10 chars:', dodoApiKey.substring(0, 10));
 
     const origin = req.headers.get('origin') || 'https://id-preview--17118c64-4b66-4e46-8c8e-ac3c49f2decc.lovable.app';
     console.log('Request origin:', origin);
@@ -97,6 +98,28 @@ serve(async (req) => {
     };
 
     console.log('DODO payment data:', JSON.stringify(paymentData, null, 2));
+    console.log('Making request to DODO API...');
+
+    // Test DODO API connectivity first
+    try {
+      const testResponse = await fetch('https://api.dodopayments.com/', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${dodoApiKey}`,
+        },
+      });
+      console.log('DODO API connectivity test - Status:', testResponse.status);
+    } catch (connectError) {
+      console.error('DODO API connectivity test failed:', connectError.message);
+      return new Response(JSON.stringify({ 
+        error: 'Unable to connect to payment gateway', 
+        details: 'Network connectivity issue',
+        booking_id: booking.id 
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const dodoResponse = await fetch('https://api.dodopayments.com/v1/payments', {
       method: 'POST',
@@ -110,11 +133,39 @@ serve(async (req) => {
     console.log('DODO API response status:', dodoResponse.status);
     console.log('DODO API response headers:', Object.fromEntries(dodoResponse.headers.entries()));
 
-    const dodoResult = await dodoResponse.json();
-    console.log('DODO API response body:', JSON.stringify(dodoResult, null, 2));
+    const dodoResult = await dodoResponse.text();
+    console.log('DODO API response body (raw):', dodoResult);
+
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(dodoResult);
+    } catch (parseError) {
+      console.error('Failed to parse DODO response as JSON:', parseError);
+      console.error('Raw response:', dodoResult);
+      
+      // Log the failure for manual follow-up
+      await supabase
+        .from('payment_logs')
+        .insert({
+          booking_id: booking.id,
+          event_type: 'payment_creation_failed',
+          event_data: { error: 'Invalid JSON response', raw_response: dodoResult, status: dodoResponse.status }
+        });
+
+      return new Response(JSON.stringify({ 
+        error: 'Invalid response from payment provider', 
+        details: 'Response format error',
+        booking_id: booking.id 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('DODO API response parsed:', JSON.stringify(parsedResult, null, 2));
 
     if (!dodoResponse.ok) {
-      console.error('DODO API error - Status:', dodoResponse.status, 'Response:', dodoResult);
+      console.error('DODO API error - Status:', dodoResponse.status, 'Response:', parsedResult);
       
       // Log the booking for manual follow-up
       await supabase
@@ -122,12 +173,12 @@ serve(async (req) => {
         .insert({
           booking_id: booking.id,
           event_type: 'payment_creation_failed',
-          event_data: { error: dodoResult, status: dodoResponse.status }
+          event_data: { error: parsedResult, status: dodoResponse.status }
         });
 
       return new Response(JSON.stringify({ 
         error: 'Failed to create payment with provider', 
-        details: dodoResult,
+        details: parsedResult,
         booking_id: booking.id 
       }), {
         status: 500,
@@ -139,8 +190,8 @@ serve(async (req) => {
     const { error: updateError } = await supabase
       .from('bookings')
       .update({
-        dodo_payment_id: dodoResult.id,
-        dodo_checkout_url: dodoResult.checkout_url,
+        dodo_payment_id: parsedResult.id,
+        dodo_checkout_url: parsedResult.checkout_url,
         updated_at: new Date().toISOString()
       })
       .eq('id', booking.id);
@@ -157,15 +208,15 @@ serve(async (req) => {
       .insert({
         booking_id: booking.id,
         event_type: 'payment_created',
-        event_data: dodoResult
+        event_data: parsedResult
       });
 
     console.log('=== CREATE PAYMENT FUNCTION COMPLETED ===');
 
     return new Response(JSON.stringify({
       booking_id: booking.id,
-      payment_id: dodoResult.id,
-      checkout_url: dodoResult.checkout_url,
+      payment_id: parsedResult.id,
+      checkout_url: parsedResult.checkout_url,
       amount: amount,
       currency: currency
     }), {
@@ -176,10 +227,13 @@ serve(async (req) => {
     console.error('=== CREATE PAYMENT FUNCTION ERROR ===');
     console.error('Error in create-payment function:', error);
     console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
     
     return new Response(JSON.stringify({ 
       error: 'Internal server error', 
       message: error.message,
+      name: error.name,
       stack: error.stack 
     }), {
       status: 500,
