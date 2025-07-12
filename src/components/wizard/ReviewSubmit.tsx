@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Edit, File, Send } from 'lucide-react';
+import { Edit, File } from 'lucide-react';
 import { FormData } from '@/types/booking';
 import PricingDisplay from './PricingDisplay';
 import PaymentButton from './PaymentButton';
@@ -14,65 +14,6 @@ interface ReviewSubmitProps {
 }
 
 const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
-  const generateWhatsAppMessage = (paymentStatus?: string) => {
-    const serviceNames = {
-      'wordpress': 'WordPress',
-      'graphic-design': 'Graphic Design',
-      'video-editing': 'Video Editing',
-      'tshirt-printing': 'T-shirt Printing'
-    };
-
-    const serviceName = serviceNames[formData.service as keyof typeof serviceNames] || formData.service;
-    
-    let message = `🎯 NEW SERVICE REQUEST\n\n`;
-    message += `📋 SERVICE: ${serviceName}\n`;
-    message += `👤 CLIENT: ${formData.contactInfo.name}\n`;
-    message += `📱 PHONE: ${formData.contactInfo.phone}\n`;
-    message += `📧 EMAIL: ${formData.contactInfo.email}\n\n`;
-
-    // Add payment status if provided
-    if (paymentStatus) {
-      message += `💳 PAYMENT STATUS: ${paymentStatus.toUpperCase()}\n\n`;
-    }
-
-    if (formData.files.length > 0) {
-      message += `📎 FILES (${formData.files.length}):\n`;
-      formData.files.forEach((file, index) => {
-        message += `- ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)\n`;
-      });
-      message += `\n🔗 DOWNLOAD LINKS:\n`;
-      formData.files.forEach((file, index) => {
-        message += `File ${index + 1}: ${file.url}\n`;
-      });
-      message += `\n`;
-    }
-
-    message += `📋 SPECIFIC REQUIREMENTS:\n`;
-    Object.entries(formData.serviceDetails).forEach(([key, value]) => {
-      if (value) {
-        const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        const formattedValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
-        message += `• ${formattedKey}: ${formattedValue}\n`;
-      }
-    });
-
-    message += `\n⚡ SUBMIT DATE: ${new Date().toLocaleString()}\n`;
-    message += `\n💼 Contact preference: ${formData.contactInfo.preferredContact}`;
-
-    return encodeURIComponent(message);
-  };
-
-  const handleWhatsAppSubmit = (paymentStatus = 'not-paid') => {
-    const message = generateWhatsAppMessage(paymentStatus);
-    const phoneNumber = "+212634653205"; // Replace with your business WhatsApp number
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-    
-    // Clear form data from localStorage after successful submission
-    localStorage.removeItem('bookingFormData');
-    
-    window.open(whatsappUrl, '_blank');
-  };
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -222,35 +163,7 @@ const ReviewSubmit: React.FC<ReviewSubmitProps> = ({ formData, onEdit }) => {
 
       {/* Payment Section */}
       <div className="border-t pt-6">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Payment Options</h3>
-          <p className="text-gray-600 text-sm">Choose your preferred payment method</p>
-        </div>
-        
-        {/* Payment Button */}
         <PaymentButton formData={formData} />
-        
-        {/* OR Divider */}
-        <div className="flex items-center my-6">
-          <hr className="flex-1 border-gray-300" />
-          <span className="px-3 text-gray-500 text-sm">OR</span>
-          <hr className="flex-1 border-gray-300" />
-        </div>
-        
-        {/* WhatsApp Submit Button */}
-        <div className="text-center">
-          <Button
-            onClick={() => handleWhatsAppSubmit('not-paid')}
-            size="lg"
-            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-3 w-full"
-          >
-            <Send className="w-5 h-5 mr-2" />
-            Send Order via WhatsApp (Pay Later)
-          </Button>
-          <p className="text-sm text-gray-500 mt-2">
-            Send order details to WhatsApp and arrange payment later
-          </p>
-        </div>
       </div>
     </div>
   );

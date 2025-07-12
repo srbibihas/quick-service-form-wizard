@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Loader2 } from 'lucide-react';
-import { usePayment } from '@/hooks/usePayment';
+import { Send } from 'lucide-react';
 import { FormData, PRICING } from '@/types/booking';
 
 interface PaymentButtonProps {
@@ -11,8 +10,6 @@ interface PaymentButtonProps {
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => {
-  const { createPayment, isLoading } = usePayment();
-
   const calculatePrice = (): number => {
     const service = formData.service;
     const details = formData.serviceDetails;
@@ -67,15 +64,58 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
     return 0;
   };
 
-  const handlePayment = async () => {
-    const amount = calculatePrice();
+  const generateWhatsAppMessage = () => {
+    const serviceNames = {
+      'wordpress': 'WordPress',
+      'graphic-design': 'Graphic Design',
+      'video-editing': 'Video Editing',
+      'tshirt-printing': 'T-shirt Printing'
+    };
+
+    const serviceName = serviceNames[formData.service as keyof typeof serviceNames] || formData.service;
     
-    if (amount <= 0) {
-      console.error('Invalid amount calculated:', amount);
-      return;
+    let message = `🎯 NEW SERVICE REQUEST\n\n`;
+    message += `📋 SERVICE: ${serviceName}\n`;
+    message += `👤 CLIENT: ${formData.contactInfo.name}\n`;
+    message += `📱 PHONE: ${formData.contactInfo.phone}\n`;
+    message += `📧 EMAIL: ${formData.contactInfo.email}\n\n`;
+
+    if (formData.files.length > 0) {
+      message += `📎 FILES (${formData.files.length}):\n`;
+      formData.files.forEach((file, index) => {
+        message += `- ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)\n`;
+      });
+      message += `\n🔗 DOWNLOAD LINKS:\n`;
+      formData.files.forEach((file, index) => {
+        message += `File ${index + 1}: ${file.url}\n`;
+      });
+      message += `\n`;
     }
 
-    await createPayment(formData, amount, 'MAD');
+    message += `📋 SPECIFIC REQUIREMENTS:\n`;
+    Object.entries(formData.serviceDetails).forEach(([key, value]) => {
+      if (value) {
+        const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        const formattedValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+        message += `• ${formattedKey}: ${formattedValue}\n`;
+      }
+    });
+
+    message += `\n⚡ SUBMIT DATE: ${new Date().toLocaleString()}\n`;
+    message += `\n💼 Contact preference: ${formData.contactInfo.preferredContact}`;
+
+    return encodeURIComponent(message);
+  };
+
+  const handleWhatsAppSubmit = () => {
+    const message = generateWhatsAppMessage();
+    const phoneNumber = "+212634653205";
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    
+    // Clear form data from localStorage after successful submission
+    localStorage.removeItem('bookingFormData');
+    
+    window.open(whatsappUrl, '_blank');
   };
 
   const price = calculatePrice();
@@ -91,31 +131,22 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
           {price} DHS
         </p>
         <p className="text-sm text-gray-600">
-          Secure payment via DODO
+          Send order via WhatsApp
         </p>
       </div>
       
       <Button
-        onClick={handlePayment}
-        disabled={disabled || isLoading}
+        onClick={handleWhatsAppSubmit}
+        disabled={disabled}
         size="lg"
-        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 w-full"
+        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-3 w-full"
       >
-        {isLoading ? (
-          <>
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Processing...
-          </>
-        ) : (
-          <>
-            <CreditCard className="w-5 h-5 mr-2" />
-            Pay {price} DHS
-          </>
-        )}
+        <Send className="w-5 h-5 mr-2" />
+        Pay {price} DHS (Pay Later)
       </Button>
       
       <p className="text-xs text-gray-500 mt-2">
-        You will be redirected to DODO's secure payment page
+        Send order details to WhatsApp and arrange payment later
       </p>
     </div>
   );
