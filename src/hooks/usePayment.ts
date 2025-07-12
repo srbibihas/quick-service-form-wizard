@@ -56,9 +56,10 @@ export const usePayment = () => {
     setIsLoading(true);
     
     try {
-      console.log('Creating payment for:', formData.service, 'Amount:', amount, currency);
+      console.log('=== PAYMENT CREATION STARTED ===');
+      console.log('Form data:', formData);
+      console.log('Amount:', amount, 'Currency:', currency);
       
-      // Remove authentication requirement - call function directly
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
           service: formData.service,
@@ -70,11 +71,23 @@ export const usePayment = () => {
         }
       });
 
+      console.log('Supabase function response:', { data, error });
+
       if (error) {
         console.error('Payment creation error:', error);
         toast({
           title: "Payment Error",
-          description: "Failed to create payment. Please try again.",
+          description: error.message || "Failed to create payment. Please try again.",
+          variant: "destructive"
+        });
+        return null;
+      }
+
+      if (!data || !data.checkout_url) {
+        console.error('Invalid response from payment function:', data);
+        toast({
+          title: "Payment Error",
+          description: "Invalid response from payment service. Please try again.",
           variant: "destructive"
         });
         return null;
@@ -94,10 +107,10 @@ export const usePayment = () => {
       localStorage.setItem('paymentFormData', JSON.stringify(formData));
       localStorage.setItem('paymentReturnUrl', window.location.href);
 
+      console.log('Redirecting to:', data.checkout_url);
+      
       // Redirect to DODO payment page
-      if (data.checkout_url) {
-        window.location.href = data.checkout_url;
-      }
+      window.location.href = data.checkout_url;
 
       return data;
 
