@@ -1,9 +1,13 @@
+
 {
   "version": 2,
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/next"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
   ],
   "routes": [
@@ -13,12 +17,12 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/index.html"
     }
   ],
   "env": {
-    "STRIPE_SECRET_KEY": "@stripe_secret_key",
-    "STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret",
+    "DODO_API_KEY": "@dodo_api_key",
+    "DODO_WEBHOOK_SECRET": "@dodo_webhook_secret",
     "NEXT_PUBLIC_URL": "@next_public_url"
   }
 }

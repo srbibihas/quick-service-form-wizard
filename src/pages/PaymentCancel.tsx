@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { XCircle, Home, CreditCard } from 'lucide-react';
+import { XCircle, Home, ArrowLeft } from 'lucide-react';
 
-const PaymentCancel = () => {
+const PaymentCancel: React.FC = () => {
   const navigate = useNavigate();
 
   return (
@@ -15,15 +16,15 @@ const PaymentCancel = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center space-y-4">
-            <XCircle className="mx-auto h-12 w-12 text-red-500" />
-            <h2 className="text-2xl font-semibold text-red-500">Payment Cancelled</h2>
-            <p>Your payment was cancelled. You can try again or return to the home page.</p>
-            <div className="flex flex-col gap-2">
-              <Button onClick={() => window.history.back()} className="mt-4">
-                <CreditCard className="mr-2 h-4 w-4" />
-                Try Again
+            <XCircle className="mx-auto h-12 w-12 text-orange-500" />
+            <h2 className="text-2xl font-semibold text-orange-500">Payment Cancelled</h2>
+            <p>Your payment was cancelled. You can try again or contact us for assistance.</p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button onClick={() => navigate(-1)} variant="outline" className="flex-1">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Go Back
               </Button>
-              <Button onClick={() => navigate('/')} variant="outline" className="mt-2">
+              <Button onClick={() => navigate('/')} className="flex-1">
                 <Home className="mr-2 h-4 w-4" />
                 Return Home
               </Button>

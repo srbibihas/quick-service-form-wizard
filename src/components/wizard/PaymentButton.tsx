@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Send, CreditCard } from 'lucide-react';
 import { FormData, PRICING } from '@/types/booking';
-import { usePayment } from '@/hooks/usePayment';
+import { useToast } from '@/hooks/use-toast';
 
 interface PaymentButtonProps {
   formData: FormData;
@@ -11,7 +11,9 @@ interface PaymentButtonProps {
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => {
-  const { createPayment, isLoading } = usePayment();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = React.useState(false);
+
   const calculatePrice = (): number => {
     const service = formData.service;
     const details = formData.serviceDetails;
@@ -120,14 +122,49 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
     window.open(whatsappUrl, '_blank');
   };
 
-  const handlePayNow = async () => {
+  const handleDodoPayment = async () => {
     const price = calculatePrice();
     if (price <= 0) return;
 
     try {
-      await createPayment(formData, price, 'MAD');
+      setIsLoading(true);
+
+      const response = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          service: formData.service,
+          serviceDetails: formData.serviceDetails,
+          contactInfo: formData.contactInfo,
+          files: formData.files,
+          amount: price,
+          currency: 'MAD'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Payment creation failed');
+      }
+
+      const { payment_url } = await response.json();
+      
+      // Clear form data from localStorage after successful submission
+      localStorage.removeItem('bookingFormData');
+      
+      // Redirect to DODO payment page
+      window.location.href = payment_url;
+
     } catch (error) {
-      console.error('Payment creation failed:', error);
+      console.error('Payment creation error:', error);
+      toast({
+        title: 'Payment Error',
+        description: 'There was an error creating your payment. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -151,7 +188,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
       <div className="space-y-3">
         {/* Pay Now with DODO */}
         <Button
-          onClick={handlePayNow}
+          onClick={handleDodoPayment}
           disabled={disabled || isLoading}
           size="lg"
           className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 w-full"
@@ -169,7 +206,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
           className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-3 w-full"
         >
           <Send className="w-5 h-5 mr-2" />
-          Pay {price} DHS Later (WhatsApp)
+          Pay Later (WhatsApp)
         </Button>
       </div>
       
