@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Send } from 'lucide-react';
+import { Send, CreditCard } from 'lucide-react';
 import { FormData, PRICING } from '@/types/booking';
+import { usePayment } from '@/hooks/usePayment';
 
 interface PaymentButtonProps {
   formData: FormData;
@@ -10,6 +11,7 @@ interface PaymentButtonProps {
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => {
+  const { createPayment, isLoading } = usePayment();
   const calculatePrice = (): number => {
     const service = formData.service;
     const details = formData.serviceDetails;
@@ -118,6 +120,17 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
     window.open(whatsappUrl, '_blank');
   };
 
+  const handlePayNow = async () => {
+    const price = calculatePrice();
+    if (price <= 0) return;
+
+    try {
+      await createPayment(formData, price, 'MAD');
+    } catch (error) {
+      console.error('Payment creation failed:', error);
+    }
+  };
+
   const price = calculatePrice();
 
   if (price <= 0) {
@@ -126,28 +139,48 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
 
   return (
     <div className="text-center pt-4">
-      <div className="mb-4">
+      <div className="mb-6">
         <p className="text-2xl font-bold text-gray-900">
-          {price} DHS
+          {isLoading ? 'Processing...' : `${price} DHS`}
         </p>
         <p className="text-sm text-gray-600">
-          Send order via WhatsApp
+          Choose your payment method
         </p>
       </div>
       
-      <Button
-        onClick={handleWhatsAppSubmit}
-        disabled={disabled}
-        size="lg"
-        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-3 w-full"
-      >
-        <Send className="w-5 h-5 mr-2" />
-        Pay {price} DHS (Pay Later)
-      </Button>
+      <div className="space-y-3">
+        {/* Pay Now with DODO */}
+        <Button
+          onClick={handlePayNow}
+          disabled={disabled || isLoading}
+          size="lg"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 w-full"
+        >
+          <CreditCard className="w-5 h-5 mr-2" />
+          {isLoading ? 'Processing...' : `Pay ${price} DHS Now`}
+        </Button>
+        
+        {/* Pay Later via WhatsApp */}
+        <Button
+          onClick={handleWhatsAppSubmit}
+          disabled={disabled || isLoading}
+          variant="outline"
+          size="lg"
+          className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-3 w-full"
+        >
+          <Send className="w-5 h-5 mr-2" />
+          Pay {price} DHS Later (WhatsApp)
+        </Button>
+      </div>
       
-      <p className="text-xs text-gray-500 mt-2">
-        Send order details to WhatsApp and arrange payment later
-      </p>
+      <div className="mt-4 space-y-1">
+        <p className="text-xs text-gray-500">
+          Pay now: Secure payment via DODO Payments
+        </p>
+        <p className="text-xs text-gray-500">
+          Pay later: Send order details to WhatsApp and arrange payment
+        </p>
+      </div>
     </div>
   );
 };

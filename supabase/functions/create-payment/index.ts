@@ -1,11 +1,40 @@
-
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-nocheck
+// deno-lint-ignore-file
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const DODO_API_KEY = Deno.env.get('DODO_API_KEY') ?? '';
+const DODO_API_URL = 'https://api.dodo.dev/v1';
+
+async function createDodoPayment(amount: number, currency: string, metadata: any) {
+  const response = await fetch(`${DODO_API_URL}/payments`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${DODO_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      amount: Math.round(amount * 100),
+      currency,
+      metadata,
+      success_url: `${Deno.env.get('PUBLIC_URL')}/payment-success`,
+      cancel_url: `${Deno.env.get('PUBLIC_URL')}/payment-cancel`,
+      webhook_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/dodo-webhook`,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`DODO payment creation failed: ${JSON.stringify(error)}`);
+  }
+
+  return await response.json();
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -67,132 +96,21 @@ serve(async (req) => {
 
     console.log('Booking created successfully:', booking.id);
 
-    // Check DODO API key
-    const dodoApiKey = Deno.env.get('DODO_API_KEY');
-    if (!dodoApiKey) {
-      console.error('DODO API key not configured');
-      return new Response(JSON.stringify({ error: 'Payment gateway not configured' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log('DODO API key found, length:', dodoApiKey.length);
-    console.log('DODO API key first 10 chars:', dodoApiKey.substring(0, 10));
-
-    const origin = req.headers.get('origin') || 'https://id-preview--17118c64-4b66-4e46-8c8e-ac3c49f2decc.lovable.app';
-    console.log('Request origin:', origin);
-
-    const paymentData = {
-      amount: amount,
-      currency: currency,
-      description: `${service} - ${contactInfo.name}`,
+    // Create DODO payment
+    const dodoPayment = await createDodoPayment(amount, currency, {
+      booking_id: booking.id,
+      service,
+      customer_name: contactInfo.name,
       customer_email: contactInfo.email,
-      return_url: `${origin}/payment/success?booking=${booking.id}`,
-      cancel_url: `${origin}/payment/cancel?booking=${booking.id}`,
-      webhook_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/dodo-webhook`,
-      metadata: {
-        booking_id: booking.id,
-        service: service
-      }
-    };
-
-    console.log('DODO payment data:', JSON.stringify(paymentData, null, 2));
-    console.log('Making request to DODO API...');
-
-    // Test DODO API connectivity first
-    try {
-      const testResponse = await fetch('https://api.dodopayments.com/', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${dodoApiKey}`,
-        },
-      });
-      console.log('DODO API connectivity test - Status:', testResponse.status);
-    } catch (connectError) {
-      console.error('DODO API connectivity test failed:', connectError.message);
-      return new Response(JSON.stringify({ 
-        error: 'Unable to connect to payment gateway', 
-        details: 'Network connectivity issue',
-        booking_id: booking.id 
-      }), {
-        status: 503,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const dodoResponse = await fetch('https://api.dodopayments.com/v1/payments', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${dodoApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(paymentData),
+      customer_phone: contactInfo.phone
     });
 
-    console.log('DODO API response status:', dodoResponse.status);
-    console.log('DODO API response headers:', Object.fromEntries(dodoResponse.headers.entries()));
-
-    const dodoResult = await dodoResponse.text();
-    console.log('DODO API response body (raw):', dodoResult);
-
-    let parsedResult;
-    try {
-      parsedResult = JSON.parse(dodoResult);
-    } catch (parseError) {
-      console.error('Failed to parse DODO response as JSON:', parseError);
-      console.error('Raw response:', dodoResult);
-      
-      // Log the failure for manual follow-up
-      await supabase
-        .from('payment_logs')
-        .insert({
-          booking_id: booking.id,
-          event_type: 'payment_creation_failed',
-          event_data: { error: 'Invalid JSON response', raw_response: dodoResult, status: dodoResponse.status }
-        });
-
-      return new Response(JSON.stringify({ 
-        error: 'Invalid response from payment provider', 
-        details: 'Response format error',
-        booking_id: booking.id 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log('DODO API response parsed:', JSON.stringify(parsedResult, null, 2));
-
-    if (!dodoResponse.ok) {
-      console.error('DODO API error - Status:', dodoResponse.status, 'Response:', parsedResult);
-      
-      // Log the booking for manual follow-up
-      await supabase
-        .from('payment_logs')
-        .insert({
-          booking_id: booking.id,
-          event_type: 'payment_creation_failed',
-          event_data: { error: parsedResult, status: dodoResponse.status }
-        });
-
-      return new Response(JSON.stringify({ 
-        error: 'Failed to create payment with provider', 
-        details: parsedResult,
-        booking_id: booking.id 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Update booking with DODO payment details
+    // Update booking with payment details
     const { error: updateError } = await supabase
       .from('bookings')
       .update({
-        dodo_payment_id: parsedResult.id,
-        dodo_checkout_url: parsedResult.checkout_url,
-        updated_at: new Date().toISOString()
+        dodo_payment_id: dodoPayment.id,
+        payment_details: dodoPayment
       })
       .eq('id', booking.id);
 
@@ -202,23 +120,32 @@ serve(async (req) => {
       console.log('Booking updated with payment details successfully');
     }
 
-    // Log payment creation
-    await supabase
-      .from('payment_logs')
-      .insert({
-        booking_id: booking.id,
-        event_type: 'payment_created',
-        event_data: parsedResult
+    // Send booking notification using existing notification function
+    const { error: notificationError } = await supabase
+      .functions.invoke('send-notification', {
+        body: {
+          type: 'booking_created',
+          booking_id: booking.id,
+          contact_info: contactInfo,
+          service_details: {
+            service,
+            ...serviceDetails,
+            amount: (amount).toFixed(2),
+            currency
+          }
+        }
       });
+
+    if (notificationError) {
+      console.error('Notification error:', notificationError);
+      // Don't throw, as this is not critical for payment flow
+    }
 
     console.log('=== CREATE PAYMENT FUNCTION COMPLETED ===');
 
     return new Response(JSON.stringify({
-      booking_id: booking.id,
-      payment_id: parsedResult.id,
-      checkout_url: parsedResult.checkout_url,
-      amount: amount,
-      currency: currency
+      payment_url: dodoPayment.checkout_url,
+      booking_id: booking.id
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

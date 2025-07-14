@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true,
+    "types": ["https://deno.land/x/supabase@1.7.1/mod.ts"]
+  }
+}
