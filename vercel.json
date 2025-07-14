@@ -22,7 +22,7 @@
   "env": {
   "DODO_API_KEY": "VLoQLMB1P1HDkNyU.sTowaaaEhc9miuxCc71HUved-CVriNXJWN-XKPFyju-YfDGQ",
   "DODO_WEBHOOK_SECRET": "whsec_zC2b364ZgEJIeafcHcDIXG4X", 
-  "NEXT_PUBLIC_URL": "https://booking-test-mauve.vercel.app/"
+  "NEXT_PUBLIC_URL": "https://booking-onne.vercel.app/"
 }
   ]
 }
