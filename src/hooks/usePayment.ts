@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { FormData } from '@/types/booking';
@@ -16,26 +17,30 @@ export const usePayment = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          service: formData.service,
+          serviceDetails: formData.serviceDetails,
+          contactInfo: formData.contactInfo,
+          files: formData.files,
           amount,
-          description: `${formData.service} service booking`,
-          customerEmail: formData.contactInfo.email,
+          currency: 'MAD'
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Payment creation failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Payment creation failed');
       }
 
-      const { url } = await response.json();
+      const { payment_url } = await response.json();
       
-      // Redirect to Stripe checkout page
-      window.location.href = url;
+      // Redirect to DODO checkout page
+      window.location.href = payment_url;
 
     } catch (error) {
       console.error('Payment creation error:', error);
       toast({
         title: 'Payment Error',
-        description: 'There was an error creating your payment. Please try again.',
+        description: error instanceof Error ? error.message : 'There was an error creating your payment. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -43,11 +48,11 @@ export const usePayment = () => {
     }
   };
 
-  const verifyPayment = async (sessionId: string) => {
+  const verifyPayment = async (paymentId: string) => {
     try {
       setIsLoading(true);
 
-      const response = await fetch(`/api/verify-payment?session_id=${sessionId}`, {
+      const response = await fetch(`/api/verify-payment?payment_id=${paymentId}`, {
         method: 'GET',
       });
 
