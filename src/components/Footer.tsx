@@ -1,16 +1,19 @@
 
 import React from 'react';
-import { Copyright } from 'lucide-react';
 
-const Footer: React.FC = () => {
-  const currentYear = new Date().getFullYear();
-
+const Footer = () => {
+  console.log('Footer component rendering...');
+  
   return (
-    <footer className="w-full py-4 mt-8 border-t bg-background">
+    <footer className="mt-16 py-8 border-t bg-white">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-center text-sm text-muted-foreground">
-          <Copyright className="w-4 h-4 mr-1" />
-          <span>{currentYear} Rbibihas Groupe</span>
+        <div className="text-center text-gray-600">
+          <p>&copy; 2025 Digital Services Booking. All rights reserved.</p>
+          <div className="mt-4 space-x-4">
+            <a href="#" className="hover:text-gray-900">Privacy Policy</a>
+            <a href="#" className="hover:text-gray-900">Terms of Service</a>
+            <a href="#" className="hover:text-gray-900">Contact</a>
+          </div>
         </div>
       </div>
     </footer>
