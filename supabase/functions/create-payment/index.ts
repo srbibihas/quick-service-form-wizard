@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 // deno-lint-ignore-file
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -9,7 +10,7 @@ const corsHeaders = {
 };
 
 const DODO_API_KEY = Deno.env.get('DODO_API_KEY') ?? '';
-const DODO_API_URL = 'https://api.dodo.dev/v1';
+const DODO_API_URL = 'https://api.dodopayments.com/v1';
 
 async function createDodoPayment(amount: number, currency: string, metadata: any) {
   const response = await fetch(`${DODO_API_URL}/payments`, {
