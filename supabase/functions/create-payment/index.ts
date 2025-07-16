@@ -54,7 +54,7 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('Request body received:', JSON.stringify(requestBody, null, 2));
 
-    const { service, serviceDetails, contactInfo, files, amount, currency = 'MAD' } = requestBody;
+    const { service, serviceDetails, contactInfo, files, amount, currency = 'USD' } = requestBody;
 
     // Validate required fields
     if (!service || !serviceDetails || !contactInfo || !amount) {

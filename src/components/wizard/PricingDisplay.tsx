@@ -87,7 +87,7 @@ const PricingDisplay: React.FC<PricingDisplayProps> = ({ formData }) => {
             <span className="font-medium text-green-800">Estimated Price</span>
           </div>
           <Badge className="bg-green-600 text-white text-lg px-3 py-1">
-            {pricing.price} {pricing.currency}
+            ${pricing.price}
           </Badge>
         </div>
         {pricing.description && (

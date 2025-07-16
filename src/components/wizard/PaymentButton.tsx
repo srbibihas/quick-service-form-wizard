@@ -138,7 +138,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
     <div className="text-center pt-4">
       <div className="mb-6">
         <p className="text-2xl font-bold text-gray-900">
-          {isLoading ? 'Processing...' : `${price} DHS`}
+          {isLoading ? 'Processing...' : `$${price}`}
         </p>
         <p className="text-sm text-gray-600">
           Choose your payment method
@@ -154,7 +154,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
           className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 w-full"
         >
           <CreditCard className="w-5 h-5 mr-2" />
-          {isLoading ? 'Processing...' : `Pay ${price} DHS Now`}
+          {isLoading ? 'Processing...' : `Pay $${price} Now`}
         </Button>
         
         {/* Pay Later via WhatsApp */}

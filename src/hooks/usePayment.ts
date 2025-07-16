@@ -19,7 +19,7 @@ export const usePayment = () => {
           contactInfo: formData.contactInfo,
           files: formData.files,
           amount,
-          currency: 'MAD'
+          currency: 'USD'
         }
       });
 
