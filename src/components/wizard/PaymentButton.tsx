@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Send, CreditCard } from 'lucide-react';
 import { FormData, PRICING } from '@/types/booking';
-import { useToast } from '@/hooks/use-toast';
+import { usePayment } from '@/hooks/usePayment';
 
 interface PaymentButtonProps {
   formData: FormData;
@@ -11,8 +11,7 @@ interface PaymentButtonProps {
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = React.useState(false);
+  const { createPayment, isLoading } = usePayment();
 
   const calculatePrice = (): number => {
     const service = formData.service;
@@ -126,46 +125,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
     const price = calculatePrice();
     if (price <= 0) return;
 
-    try {
-      setIsLoading(true);
-
-      const response = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          service: formData.service,
-          serviceDetails: formData.serviceDetails,
-          contactInfo: formData.contactInfo,
-          files: formData.files,
-          amount: price,
-          currency: 'MAD'
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Payment creation failed');
-      }
-
-      const { payment_url } = await response.json();
-      
-      // Clear form data from localStorage after successful submission
-      localStorage.removeItem('bookingFormData');
-      
-      // Redirect to DODO payment page
-      window.location.href = payment_url;
-
-    } catch (error) {
-      console.error('Payment creation error:', error);
-      toast({
-        title: 'Payment Error',
-        description: 'There was an error creating your payment. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await createPayment(formData, price);
   };
 
   const price = calculatePrice();

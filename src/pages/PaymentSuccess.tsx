@@ -5,22 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Home, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { usePayment } from '@/hooks/usePayment';
 
 const PaymentSuccess: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { verifyPayment } = usePayment();
   const [isVerifying, setIsVerifying] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
 
-  const paymentId = searchParams.get('payment_id');
+  const bookingId = searchParams.get('booking_id');
 
   useEffect(() => {
     const verifyPaymentStatus = async () => {
-      if (!paymentId) {
+      if (!bookingId) {
         toast({
           title: "Error",
-          description: "No payment ID found",
+          description: "No booking ID found",
           variant: "destructive",
         });
         navigate('/');
@@ -28,14 +30,8 @@ const PaymentSuccess: React.FC = () => {
       }
 
       try {
-        const response = await fetch(`/api/verify-payment?payment_id=${paymentId}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to verify payment');
-        }
-
-        const result = await response.json();
-        setPaymentStatus(result.status);
+        const result = await verifyPayment(bookingId);
+        setPaymentStatus(result.payment_status);
       } catch (error) {
         console.error('Error verifying payment:', error);
         toast({
@@ -50,7 +46,7 @@ const PaymentSuccess: React.FC = () => {
     };
 
     verifyPaymentStatus();
-  }, [paymentId, navigate, toast]);
+  }, [bookingId, navigate, toast, verifyPayment]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -63,7 +59,7 @@ const PaymentSuccess: React.FC = () => {
             <div className="text-center">
               <p>Verifying payment...</p>
             </div>
-          ) : paymentStatus === 'succeeded' ? (
+          ) : paymentStatus === 'succeeded' || paymentStatus === 'paid' ? (
             <div className="text-center space-y-4">
               <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
               <h2 className="text-2xl font-semibold text-green-500">Payment Successful!</h2>

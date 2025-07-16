@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { FormData } from '@/types/booking';
+import { supabase } from '@/integrations/supabase/client';
 
 export const usePayment = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,27 +12,22 @@ export const usePayment = () => {
     try {
       setIsLoading(true);
 
-      const response = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
           service: formData.service,
           serviceDetails: formData.serviceDetails,
           contactInfo: formData.contactInfo,
           files: formData.files,
           amount,
           currency: 'MAD'
-        }),
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Payment creation failed');
+      if (error) {
+        throw new Error(error.message || 'Payment creation failed');
       }
 
-      const { payment_url } = await response.json();
+      const { payment_url } = data;
       
       // Redirect to DODO checkout page
       window.location.href = payment_url;
@@ -48,19 +44,18 @@ export const usePayment = () => {
     }
   };
 
-  const verifyPayment = async (paymentId: string) => {
+  const verifyPayment = async (bookingId: string) => {
     try {
       setIsLoading(true);
 
-      const response = await fetch(`/api/verify-payment?payment_id=${paymentId}`, {
-        method: 'GET',
+      const { data, error } = await supabase.functions.invoke('verify-payment', {
+        body: { booking_id: bookingId }
       });
 
-      if (!response.ok) {
+      if (error) {
         throw new Error('Payment verification failed');
       }
 
-      const data = await response.json();
       return data;
     } catch (error) {
       console.error('Payment verification error:', error);
