@@ -2,72 +2,79 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { FormData } from '@/types/booking';
-import { supabase } from '@/integrations/supabase/client';
+
+declare global {
+  interface Window {
+    paypal: any;
+  }
+}
 
 export const usePayment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const createPayment = async (formData: FormData, amount: number) => {
-    try {
-      setIsLoading(true);
-
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: {
-          service: formData.service,
-          serviceDetails: formData.serviceDetails,
-          contactInfo: formData.contactInfo,
-          files: formData.files,
-          amount,
-          currency: 'USD'
+  const createPayPalPayment = (formData: FormData, amount: number, onSuccess: () => void) => {
+    return {
+      createOrder: (data: any, actions: any) => {
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: amount.toString(),
+              currency_code: 'USD'
+            },
+            description: `${formData.service} service`
+          }]
+        });
+      },
+      onApprove: async (data: any, actions: any) => {
+        try {
+          setIsLoading(true);
+          const details = await actions.order.capture();
+          
+          // Store booking data
+          const bookingData = {
+            service: formData.service,
+            serviceDetails: formData.serviceDetails,
+            contactInfo: formData.contactInfo,
+            files: formData.files,
+            amount,
+            currency: 'USD',
+            paypalOrderId: details.id,
+            status: 'paid'
+          };
+          
+          localStorage.setItem('completedBooking', JSON.stringify(bookingData));
+          
+          toast({
+            title: 'Payment Successful',
+            description: 'Your payment has been processed successfully!',
+          });
+          
+          onSuccess();
+        } catch (error) {
+          console.error('Payment capture error:', error);
+          toast({
+            title: 'Payment Error',
+            description: 'There was an error processing your payment.',
+            variant: 'destructive',
+          });
+        } finally {
+          setIsLoading(false);
         }
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Payment creation failed');
+      },
+      onError: (err: any) => {
+        console.error('PayPal error:', err);
+        toast({
+          title: 'Payment Error',
+          description: 'There was an error with PayPal. Please try again.',
+          variant: 'destructive',
+        });
       }
-
-      const { payment_url } = data;
-      
-      // Redirect to DODO checkout page
-      window.location.href = payment_url;
-
-    } catch (error) {
-      console.error('Payment creation error:', error);
-      toast({
-        title: 'Payment Error',
-        description: error instanceof Error ? error.message : 'There was an error creating your payment. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const verifyPayment = async (bookingId: string) => {
-    try {
-      setIsLoading(true);
-
-      const { data, error } = await supabase.functions.invoke('verify-payment', {
-        body: { booking_id: bookingId }
-      });
-
-      if (error) {
-        throw new Error('Payment verification failed');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Payment verification error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    };
   };
 
   return {
-    createPayment,
-    verifyPayment,
+    createPayPalPayment,
     isLoading,
   };
 };

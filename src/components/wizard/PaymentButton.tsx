@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Send, CreditCard } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { FormData, PRICING } from '@/types/booking';
 import { usePayment } from '@/hooks/usePayment';
+import { useNavigate } from 'react-router-dom';
 
 interface PaymentButtonProps {
   formData: FormData;
@@ -11,7 +12,9 @@ interface PaymentButtonProps {
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => {
-  const { createPayment, isLoading } = usePayment();
+  const { createPayPalPayment, isLoading } = usePayment();
+  const navigate = useNavigate();
+  const paypalRef = useRef<HTMLDivElement>(null);
 
   const calculatePrice = (): number => {
     const service = formData.service;
@@ -121,12 +124,35 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
     window.open(whatsappUrl, '_blank');
   };
 
-  const handleDodoPayment = async () => {
-    const price = calculatePrice();
-    if (price <= 0) return;
+  useEffect(() => {
+    const loadPayPalScript = () => {
+      if (window.paypal) {
+        renderPayPalButton();
+        return;
+      }
 
-    await createPayment(formData, price);
-  };
+      const script = document.createElement('script');
+      script.src = 'https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD';
+      script.onload = () => renderPayPalButton();
+      document.head.appendChild(script);
+    };
+
+    const renderPayPalButton = () => {
+      const price = calculatePrice();
+      if (price <= 0 || !paypalRef.current || !window.paypal) return;
+
+      // Clear any existing PayPal buttons
+      paypalRef.current.innerHTML = '';
+
+      const paypalConfig = createPayPalPayment(formData, price, () => {
+        navigate('/payment-success');
+      });
+
+      window.paypal.Buttons(paypalConfig).render(paypalRef.current);
+    };
+
+    loadPayPalScript();
+  }, [formData, createPayPalPayment, navigate]);
 
   const price = calculatePrice();
 
@@ -145,17 +171,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
         </p>
       </div>
       
-      <div className="space-y-3">
-        {/* Pay Now with DODO */}
-        <Button
-          onClick={handleDodoPayment}
-          disabled={disabled || isLoading}
-          size="lg"
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 w-full"
-        >
-          <CreditCard className="w-5 h-5 mr-2" />
-          {isLoading ? 'Processing...' : `Pay $${price} Now`}
-        </Button>
+      <div className="space-y-4">
+        {/* PayPal Payment */}
+        <div ref={paypalRef} className="w-full"></div>
         
         {/* Pay Later via WhatsApp */}
         <Button
@@ -172,7 +190,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
       
       <div className="mt-4 space-y-1">
         <p className="text-xs text-gray-500">
-          Pay now: Secure payment via DODO Payments
+          Pay now: Secure payment via PayPal
         </p>
         <p className="text-xs text-gray-500">
           Pay later: Send order details to WhatsApp and arrange payment
