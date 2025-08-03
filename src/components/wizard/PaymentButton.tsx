@@ -132,7 +132,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ formData, disabled }) => 
       }
 
       const script = document.createElement('script');
-      script.src = 'https://www.paypal.com/sdk/js?client-id=sb&currency=USD'; // Replace 'sb' with your actual PayPal Client ID
+      script.src = 'https://www.paypal.com/sdk/js?client-id=AUTA_EDxrKqBoS0rOgdwUGQgel2hEMGHiZHxcrhFX2LqtDJso_vzME0jl1uIXSAfbfyZP2S8DBBD3DKt&currency=USD'; // Replace 'sb' with your actual PayPal Client ID
       script.onload = () => renderPayPalButton();
       document.head.appendChild(script);
     };
